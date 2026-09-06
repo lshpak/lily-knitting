@@ -1,35 +1,13 @@
 import { useState } from 'react'
-import { useStorage } from './useStorage'
+import YarnForm from './YarnForm'
 
-const EMPTY = { brand: '', name: '', colorName: '', weight: '', yards: '', grams: '', skeins: '' }
-
-export default function YarnStash({ projects }) {
-  const [yarns, setYarns] = useStorage('lily-yarns', [])
-  const [pastYarns, setPastYarns] = useStorage('lily-yarns-past', [])
+export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
+  const { addYarn, updateYarn, deleteYarn, moveYarnToPast, restoreYarn, deletePastYarn } = yarnActions
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(EMPTY)
   const [linkingId, setLinkingId] = useState(null)
 
-  function set(field) {
-    return e => setForm({ ...form, [field]: e.target.value })
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault()
-    if (!form.brand.trim() && !form.name.trim()) return
-    const skeins = parseInt(form.skeins, 10) || 0
-    setYarns([{
-      id: Date.now().toString(),
-      brand: form.brand.trim(),
-      name: form.name.trim(),
-      colorName: form.colorName.trim(),
-      weight: form.weight.trim(),
-      yardsPerSkein: form.yards.trim(),
-      grams: form.grams.trim(),
-      skeins,
-      projectId: null,
-    }, ...yarns])
-    setForm(EMPTY)
+  function handleAddYarn(yarnData) {
+    addYarn(yarnData)
     setShowForm(false)
   }
 
@@ -39,35 +17,27 @@ export default function YarnStash({ projects }) {
     const current = getSkeins(yarn)
     const next = Math.max(0, current + delta)
     if (next === 0) {
-      setPastYarns([{ ...yarn, skeins: 0 }, ...pastYarns])
-      setYarns(yarns.filter(y => y.id !== id))
+      moveYarnToPast(id)
     } else {
-      setYarns(yarns.map(y => y.id === id ? { ...y, skeins: next } : y))
+      updateYarn(id, { skeins: next })
     }
   }
 
   function linkToProject(yarnId, projectId) {
-    setYarns(yarns.map(y => y.id === yarnId ? { ...y, projectId } : y))
+    updateYarn(yarnId, { projectId })
     setLinkingId(null)
   }
 
   function unlinkFromProject(yarnId) {
-    setYarns(yarns.map(y => y.id === yarnId ? { ...y, projectId: null } : y))
+    updateYarn(yarnId, { projectId: null })
   }
 
-  function restoreYarn(id) {
-    const yarn = pastYarns.find(y => y.id === id)
-    if (!yarn) return
-    setYarns([{ ...yarn, skeins: 1 }, ...yarns])
-    setPastYarns(pastYarns.filter(y => y.id !== id))
-  }
-
-  function deleteYarn(id, past) {
+  function handleDeleteYarn(id, past) {
     if (!confirm('Remove this yarn?')) return
     if (past) {
-      setPastYarns(pastYarns.filter(y => y.id !== id))
+      deletePastYarn(id)
     } else {
-      setYarns(yarns.filter(y => y.id !== id))
+      deleteYarn(id)
     }
   }
 
@@ -117,7 +87,7 @@ export default function YarnStash({ projects }) {
             <h3>{yarn.name}</h3>
             {yarn.colorName && <span className="yarn-color-name">{yarn.colorName}</span>}
           </div>
-          <button className="btn btn-ghost btn-sm delete-btn" onClick={() => deleteYarn(yarn.id, isPast)}>
+          <button className="btn btn-ghost btn-sm delete-btn" onClick={() => handleDeleteYarn(yarn.id, isPast)}>
             &times;
           </button>
         </div>
@@ -196,69 +166,7 @@ export default function YarnStash({ projects }) {
           + Add Yarn
         </button>
       ) : (
-        <form onSubmit={handleSubmit} className="item-form">
-          <input
-            autoFocus
-            type="text"
-            placeholder="Brand (e.g. Malabrigo)"
-            value={form.brand}
-            onChange={set('brand')}
-            className="input"
-          />
-          <input
-            type="text"
-            placeholder="Yarn name (e.g. Rios)"
-            value={form.name}
-            onChange={set('name')}
-            className="input"
-          />
-          <input
-            type="text"
-            placeholder="Color name"
-            value={form.colorName}
-            onChange={set('colorName')}
-            className="input"
-          />
-          <input
-            type="text"
-            placeholder="Weight (DK, Worsted, Bulky...)"
-            value={form.weight}
-            onChange={set('weight')}
-            className="input"
-          />
-          <div className="form-row">
-            <input
-              type="text"
-              inputMode="numeric"
-              placeholder="Yards per skein"
-              value={form.yards}
-              onChange={set('yards')}
-              className="input"
-              style={{ flex: 1 }}
-            />
-            <input
-              type="text"
-              inputMode="numeric"
-              placeholder="Grams per skein"
-              value={form.grams}
-              onChange={set('grams')}
-              className="input"
-              style={{ flex: 1 }}
-            />
-          </div>
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="Total skeins"
-            value={form.skeins}
-            onChange={set('skeins')}
-            className="input"
-          />
-          <div className="form-actions">
-            <button type="submit" className="btn btn-primary" disabled={!form.brand.trim() && !form.name.trim()}>Add</button>
-            <button type="button" className="btn btn-ghost" onClick={() => { setShowForm(false); setForm(EMPTY) }}>Cancel</button>
-          </div>
-        </form>
+        <YarnForm onSubmit={handleAddYarn} onCancel={() => setShowForm(false)} />
       )}
 
       {yarns.length === 0 && !showForm && pastYarns.length === 0 && (

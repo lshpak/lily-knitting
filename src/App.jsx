@@ -21,6 +21,8 @@ export default function App() {
   const [tab, setTab] = useStorage('lily-tab', 'wips')
   const [projects, setProjects] = useStorage('lily-projects', [])
   const [finished, setFinished] = useStorage('lily-finished', [])
+  const [yarns, setYarns] = useStorage('lily-yarns', [])
+  const [pastYarns, setPastYarns] = useStorage('lily-yarns-past', [])
   const [activeId, setActiveId] = useState(null)
 
   const activeProject = projects.find(p => p.id === activeId)
@@ -43,6 +45,7 @@ export default function App() {
 
   function deleteProject(id) {
     setProjects(projects.filter(p => p.id !== id))
+    setYarns(yarns.map(y => y.projectId === id ? { ...y, projectId: null } : y))
     deletePDF(id)
     if (activeId === id) setActiveId(null)
   }
@@ -52,7 +55,43 @@ export default function App() {
     if (!project) return
     setFinished([{ ...project, finishedAt: new Date().toISOString() }, ...finished])
     setProjects(projects.filter(p => p.id !== id))
+    setYarns(yarns.map(y => y.projectId === id ? { ...y, projectId: null } : y))
     setActiveId(null)
+  }
+
+  function addYarn(yarnData) {
+    const yarn = {
+      id: Date.now().toString(),
+      ...yarnData,
+    }
+    setYarns([yarn, ...yarns])
+    return yarn.id
+  }
+
+  function updateYarn(id, updates) {
+    setYarns(yarns.map(y => y.id === id ? { ...y, ...updates } : y))
+  }
+
+  function deleteYarn(id) {
+    setYarns(yarns.filter(y => y.id !== id))
+  }
+
+  function moveYarnToPast(id) {
+    const yarn = yarns.find(y => y.id === id)
+    if (!yarn) return
+    setPastYarns([{ ...yarn, skeins: 0 }, ...pastYarns])
+    setYarns(yarns.filter(y => y.id !== id))
+  }
+
+  function restoreYarn(id) {
+    const yarn = pastYarns.find(y => y.id === id)
+    if (!yarn) return
+    setYarns([{ ...yarn, skeins: 1 }, ...yarns])
+    setPastYarns(pastYarns.filter(y => y.id !== id))
+  }
+
+  function deletePastYarn(id) {
+    setPastYarns(pastYarns.filter(y => y.id !== id))
   }
 
   function switchTab(id) {
@@ -60,12 +99,16 @@ export default function App() {
     setActiveId(null)
   }
 
+  const yarnActions = { addYarn, updateYarn, deleteYarn, moveYarnToPast, restoreYarn, deletePastYarn }
+
   function renderContent() {
     if (tab === 'wips') {
       if (activeProject) {
         return (
           <ProjectDetail
             project={activeProject}
+            yarns={yarns}
+            yarnActions={yarnActions}
             onUpdate={(updates) => updateProject(activeId, updates)}
             onDelete={() => deleteProject(activeId)}
             onFinish={() => finishProject(activeId)}
@@ -82,7 +125,14 @@ export default function App() {
         />
       )
     }
-    if (tab === 'yarn') return <YarnStash projects={projects} />
+    if (tab === 'yarn') return (
+      <YarnStash
+        projects={projects}
+        yarns={yarns}
+        pastYarns={pastYarns}
+        yarnActions={yarnActions}
+      />
+    )
     if (tab === 'finished') return <FinishedProjects />
     if (tab === 'todo') return <TodoList />
     if (tab === 'stats') return <Stats />

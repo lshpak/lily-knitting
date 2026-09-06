@@ -369,6 +369,85 @@ body {
   gap: 10px;
 }
 
+/* Project yarn section */
+.project-yarn-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.project-yarn-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.project-yarn-info {
+  min-width: 0;
+}
+
+.project-yarn-info h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.yarn-meta-inline {
+  font-size: 13px;
+  color: var(--text-light);
+  display: block;
+  margin-top: 2px;
+}
+
+.project-yarn-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.project-yarn-btn {
+  flex: 1;
+  padding: 12px 8px;
+  font-size: 14px;
+}
+
+.project-yarn-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.picker-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.project-yarn-pick-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--warm-white);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.project-yarn-pick-card:active {
+  border-color: var(--rose-light);
+}
+
+.project-yarn-new {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 /* Pattern PDF */
 .pattern-section {
   display: flex;
