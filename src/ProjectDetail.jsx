@@ -202,6 +202,110 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
         </div>
       )}
 
+      <div className="pattern-section">
+        <label className="section-label">Pattern</label>
+        {pdf ? (
+          <div className="pattern-attached">
+            <div className="pattern-info">
+              <span className="pattern-icon">PDF</span>
+              <span className="pattern-name">{pdf.name}</span>
+            </div>
+            <div className="pattern-actions">
+              <button className="btn btn-primary btn-sm" onClick={handleViewPdf}>
+                {showPdf ? 'Hide' : 'View'}
+              </button>
+              <label className="btn btn-ghost btn-sm">
+                Replace
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  hidden
+                />
+              </label>
+              <button className="btn btn-danger btn-sm" onClick={handleRemovePdf}>
+                Remove
+              </button>
+            </div>
+          </div>
+        ) : (
+          <label className="btn btn-outline upload-btn">
+            Upload Pattern PDF
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+              hidden
+            />
+          </label>
+        )}
+        {showPdf && pdfUrl && (
+          <div className="pdf-viewer">
+            <iframe src={pdfUrl} title="Pattern PDF" />
+          </div>
+        )}
+      </div>
+
+      <div className="counters-section">
+        <label className="section-label">Counters</label>
+        {counters.length > 0 && (
+          <div className="items">
+            {counters.map(c => (
+              <div key={c.id} className="counter-card">
+                <span className="counter-name">{c.name}</span>
+                <div className="counter-controls">
+                  <button
+                    className="btn btn-skein"
+                    onClick={() => updateCounter(c.id, -1)}
+                    disabled={c.count === 0}
+                  >
+                    -1
+                  </button>
+                  <span className="counter-value">{c.count}</span>
+                  <button
+                    className="btn btn-skein"
+                    onClick={() => updateCounter(c.id, 1)}
+                  >
+                    +1
+                  </button>
+                  <button
+                    className="btn btn-ghost btn-sm delete-btn"
+                    onClick={() => deleteCounter(c.id)}
+                  >
+                    &times;
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <form onSubmit={addCounter} className="counter-form">
+          <input
+            type="text"
+            className="input input-sm"
+            placeholder="Counter name..."
+            value={newCounterName}
+            onChange={e => setNewCounterName(e.target.value)}
+          />
+          <button type="submit" className="btn btn-primary btn-sm" disabled={!newCounterName.trim()}>
+            Add
+          </button>
+        </form>
+      </div>
+
+      <div className="notes-section">
+        <label className="section-label">Notes</label>
+        <textarea
+          className="notes-input"
+          placeholder="Pattern notes, stitch counts, reminders..."
+          value={project.notes}
+          onChange={e => onUpdate({ notes: e.target.value })}
+          rows={6}
+        />
+      </div>
+
       {yarnActions && <div className="project-yarn-section">
         <label className="section-label">Yarn</label>
 
@@ -316,110 +420,6 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
           </div>
         )}
       </div>}
-
-      <div className="counters-section">
-        <label className="section-label">Counters</label>
-        {counters.length > 0 && (
-          <div className="items">
-            {counters.map(c => (
-              <div key={c.id} className="counter-card">
-                <span className="counter-name">{c.name}</span>
-                <div className="counter-controls">
-                  <button
-                    className="btn btn-skein"
-                    onClick={() => updateCounter(c.id, -1)}
-                    disabled={c.count === 0}
-                  >
-                    -1
-                  </button>
-                  <span className="counter-value">{c.count}</span>
-                  <button
-                    className="btn btn-skein"
-                    onClick={() => updateCounter(c.id, 1)}
-                  >
-                    +1
-                  </button>
-                  <button
-                    className="btn btn-ghost btn-sm delete-btn"
-                    onClick={() => deleteCounter(c.id)}
-                  >
-                    &times;
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        <form onSubmit={addCounter} className="counter-form">
-          <input
-            type="text"
-            className="input input-sm"
-            placeholder="Counter name..."
-            value={newCounterName}
-            onChange={e => setNewCounterName(e.target.value)}
-          />
-          <button type="submit" className="btn btn-primary btn-sm" disabled={!newCounterName.trim()}>
-            Add
-          </button>
-        </form>
-      </div>
-
-      <div className="pattern-section">
-        <label className="section-label">Pattern</label>
-        {pdf ? (
-          <div className="pattern-attached">
-            <div className="pattern-info">
-              <span className="pattern-icon">PDF</span>
-              <span className="pattern-name">{pdf.name}</span>
-            </div>
-            <div className="pattern-actions">
-              <button className="btn btn-primary btn-sm" onClick={handleViewPdf}>
-                {showPdf ? 'Hide' : 'View'}
-              </button>
-              <label className="btn btn-ghost btn-sm">
-                Replace
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleFileChange}
-                  hidden
-                />
-              </label>
-              <button className="btn btn-danger btn-sm" onClick={handleRemovePdf}>
-                Remove
-              </button>
-            </div>
-          </div>
-        ) : (
-          <label className="btn btn-outline upload-btn">
-            Upload Pattern PDF
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".pdf"
-              onChange={handleFileChange}
-              hidden
-            />
-          </label>
-        )}
-        {showPdf && pdfUrl && (
-          <div className="pdf-viewer">
-            <iframe src={pdfUrl} title="Pattern PDF" />
-          </div>
-        )}
-      </div>
-
-      <div className="notes-section">
-        <label className="section-label">Notes</label>
-        <textarea
-          className="notes-input"
-          placeholder="Pattern notes, stitch counts, reminders..."
-          value={project.notes}
-          onChange={e => onUpdate({ notes: e.target.value })}
-          rows={6}
-        />
-      </div>
 
       <div className="danger-zone">
         {onFinish && (
