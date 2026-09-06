@@ -346,6 +346,13 @@ body {
   font-size: 15px;
 }
 
+.project-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .project-name {
   font-size: 24px;
   font-weight: 700;
@@ -354,7 +361,12 @@ body {
 .project-type {
   font-size: 15px;
   color: var(--text-light);
-  margin-top: -16px;
+}
+
+.edit-project-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* Pattern PDF */

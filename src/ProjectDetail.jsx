@@ -2,10 +2,26 @@ import { useState, useEffect, useRef } from 'react'
 import { savePDF, getPDF, deletePDF } from './pdfStorage'
 
 export default function ProjectDetail({ project, onUpdate, onDelete, onFinish, onBack }) {
+  const [editing, setEditing] = useState(false)
+  const [editName, setEditName] = useState(project.name)
+  const [editType, setEditType] = useState(project.type || '')
   const [pdf, setPdf] = useState(null)
   const [pdfUrl, setPdfUrl] = useState(null)
   const [showPdf, setShowPdf] = useState(false)
   const fileRef = useRef()
+
+  function startEditing() {
+    setEditName(project.name)
+    setEditType(project.type || '')
+    setEditing(true)
+  }
+
+  function saveEdit() {
+    const trimmed = editName.trim()
+    if (!trimmed) return
+    onUpdate({ name: trimmed, type: editType.trim() })
+    setEditing(false)
+  }
 
   useEffect(() => {
     getPDF(project.id).then(result => {
@@ -54,8 +70,37 @@ export default function ProjectDetail({ project, onUpdate, onDelete, onFinish, o
         &larr; Back
       </button>
 
-      <h2 className="project-name">{project.name}</h2>
-      {project.type && <span className="project-type">{project.type}</span>}
+      {editing ? (
+        <div className="edit-project-form">
+          <input
+            autoFocus
+            type="text"
+            value={editName}
+            onChange={e => setEditName(e.target.value)}
+            className="input"
+            placeholder="Project name"
+          />
+          <input
+            type="text"
+            value={editType}
+            onChange={e => setEditType(e.target.value)}
+            className="input"
+            placeholder="Type (sweater, scarf, hat...)"
+          />
+          <div className="form-actions">
+            <button className="btn btn-primary btn-sm" onClick={saveEdit} disabled={!editName.trim()}>Save</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => setEditing(false)}>Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <div className="project-header">
+          <div>
+            <h2 className="project-name">{project.name}</h2>
+            {project.type && <span className="project-type">{project.type}</span>}
+          </div>
+          <button className="btn btn-ghost btn-sm" onClick={startEditing}>Edit</button>
+        </div>
+      )}
 
       <div className="pattern-section">
         <label className="section-label">Pattern</label>
