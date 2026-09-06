@@ -70,27 +70,46 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
   }
 
   function handleAddNewYarn(yarnData) {
-    const id = yarnActions.addYarn({ ...yarnData, projectId: project.id })
+    yarnActions.addYarn({ ...yarnData, projectId: project.id, skeinsUsed: 0 })
     setYarnMode(null)
   }
 
   function handleLinkExisting(yarnId) {
-    yarnActions.updateYarn(yarnId, { projectId: project.id })
+    yarnActions.updateYarn(yarnId, { projectId: project.id, skeinsUsed: 0 })
     setYarnMode(null)
   }
 
   function handleUnlink(yarnId) {
-    yarnActions.updateYarn(yarnId, { projectId: null })
+    const yarn = yarns.find(y => y.id === yarnId)
+    if (!yarn) return
+    const used = yarn.skeinsUsed || 0
+    yarnActions.updateYarn(yarnId, {
+      projectId: null,
+      skeins: getSkeins(yarn) + used,
+      skeinsUsed: 0,
+    })
   }
 
-  function yarnMeta(yarn) {
-    const parts = []
-    if (yarn.weight) parts.push(yarn.weight)
-    const yps = parseInt(yarn.yardsPerSkein ?? yarn.yards, 10) || 0
-    const sk = typeof yarn.skeins === 'number' ? yarn.skeins : (parseInt(yarn.skeins, 10) || 0)
-    if (sk) parts.push(`${sk} skein${sk === 1 ? '' : 's'}`)
-    if (yps && sk) parts.push(`${(yps * sk).toLocaleString()} yds`)
-    return parts.join(' · ')
+  function useSkein(yarnId) {
+    const yarn = yarns.find(y => y.id === yarnId)
+    if (!yarn || getSkeins(yarn) <= 0) return
+    yarnActions.updateYarn(yarnId, {
+      skeins: getSkeins(yarn) - 1,
+      skeinsUsed: (yarn.skeinsUsed || 0) + 1,
+    })
+  }
+
+  function returnSkein(yarnId) {
+    const yarn = yarns.find(y => y.id === yarnId)
+    if (!yarn || (yarn.skeinsUsed || 0) <= 0) return
+    yarnActions.updateYarn(yarnId, {
+      skeins: getSkeins(yarn) + 1,
+      skeinsUsed: (yarn.skeinsUsed || 0) - 1,
+    })
+  }
+
+  function getSkeins(yarn) {
+    return typeof yarn.skeins === 'number' ? yarn.skeins : (parseInt(yarn.skeins, 10) || 0)
   }
 
   return (
@@ -136,19 +155,51 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
 
         {linkedYarns.length > 0 && (
           <div className="items">
-            {linkedYarns.map(yarn => (
-              <div key={yarn.id} className="project-yarn-card">
-                <div className="project-yarn-info">
-                  {yarn.brand && <span className="yarn-brand">{yarn.brand}</span>}
-                  <h3>{yarn.name}</h3>
-                  {yarn.colorName && <span className="yarn-color-name">{yarn.colorName}</span>}
-                  {yarnMeta(yarn) && <span className="yarn-meta-inline">{yarnMeta(yarn)}</span>}
+            {linkedYarns.map(yarn => {
+              const used = yarn.skeinsUsed || 0
+              const remaining = getSkeins(yarn)
+              const yps = parseInt(yarn.yardsPerSkein ?? yarn.yards, 10) || 0
+              return (
+                <div key={yarn.id} className="project-yarn-card">
+                  <div className="project-yarn-top">
+                    <div className="project-yarn-info">
+                      {yarn.brand && <span className="yarn-brand">{yarn.brand}</span>}
+                      <h3>{yarn.name}</h3>
+                      {yarn.colorName && <span className="yarn-color-name">{yarn.colorName}</span>}
+                      {yarn.weight && <span className="yarn-meta-inline">{yarn.weight}</span>}
+                    </div>
+                    <button className="btn btn-ghost btn-sm" onClick={() => handleUnlink(yarn.id)}>
+                      Remove
+                    </button>
+                  </div>
+                  <div className="project-yarn-usage">
+                    <div className="yarn-skeins-row">
+                      <button
+                        className="btn btn-skein"
+                        onClick={() => returnSkein(yarn.id)}
+                        disabled={used === 0}
+                      >
+                        &minus;
+                      </button>
+                      <span className="yarn-skein-count">
+                        {used} used
+                      </span>
+                      <button
+                        className="btn btn-skein"
+                        onClick={() => useSkein(yarn.id)}
+                        disabled={remaining === 0}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span className="yarn-remaining">{remaining} left in stash</span>
+                    {yps > 0 && used > 0 && (
+                      <span className="yarn-total-yards">{(yps * used).toLocaleString()} yards used</span>
+                    )}
+                  </div>
                 </div>
-                <button className="btn btn-ghost btn-sm" onClick={() => handleUnlink(yarn.id)}>
-                  Remove
-                </button>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
