@@ -515,38 +515,6 @@ body {
   border-top: 1px solid var(--border);
 }
 
-.yarn-dot {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  border: 2px solid rgba(0, 0, 0, 0.08);
-  margin-top: 2px;
-}
-
-.color-picker {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--text-light);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.color-picker input[type="color"] {
-  position: absolute;
-  width: 0;
-  height: 0;
-  opacity: 0;
-}
-
-.color-swatch {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-}
 
 /* Todo */
 .todo-form {

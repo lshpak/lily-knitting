@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useStorage } from './useStorage'
 
-const EMPTY = { brand: '', name: '', colorName: '', color: '#b56576', weight: '', yards: '', grams: '', skeins: '' }
+const EMPTY = { brand: '', name: '', colorName: '', weight: '', yards: '', grams: '', skeins: '' }
 
 export default function YarnStash() {
   const [yarns, setYarns] = useStorage('lily-yarns', [])
@@ -20,7 +20,6 @@ export default function YarnStash() {
       brand: form.brand.trim(),
       name: form.name.trim(),
       colorName: form.colorName.trim(),
-      color: form.color,
       weight: form.weight.trim(),
       yards: form.yards.trim(),
       grams: form.grams.trim(),
@@ -68,20 +67,13 @@ export default function YarnStash() {
             onChange={set('name')}
             className="input"
           />
-          <div className="form-row">
-            <label className="color-picker">
-              <input type="color" value={form.color} onChange={set('color')} />
-              <span className="color-swatch" style={{ background: form.color }} />
-            </label>
-            <input
-              type="text"
-              placeholder="Color name"
-              value={form.colorName}
-              onChange={set('colorName')}
-              className="input"
-              style={{ flex: 1 }}
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Color name"
+            value={form.colorName}
+            onChange={set('colorName')}
+            className="input"
+          />
           <input
             type="text"
             placeholder="Weight (DK, Worsted, Bulky...)"
@@ -136,7 +128,6 @@ export default function YarnStash() {
         {yarns.map(yarn => (
           <div key={yarn.id} className="yarn-card">
             <div className="yarn-card-top">
-              <span className="yarn-dot" style={{ background: yarn.color }} />
               <div className="yarn-card-info">
                 {yarn.brand && <span className="yarn-brand">{yarn.brand}</span>}
                 <h3>{yarn.name}</h3>
