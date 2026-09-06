@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { savePDF, getPDF, deletePDF } from './pdfStorage'
 
-export default function ProjectDetail({ project, onUpdate, onDelete, onBack }) {
+export default function ProjectDetail({ project, onUpdate, onDelete, onFinish, onBack }) {
   const [pdf, setPdf] = useState(null)
   const [pdfUrl, setPdfUrl] = useState(null)
   const [showPdf, setShowPdf] = useState(false)
@@ -51,7 +51,7 @@ export default function ProjectDetail({ project, onUpdate, onDelete, onBack }) {
   return (
     <div className="project-detail">
       <button className="btn btn-ghost back-btn" onClick={onBack}>
-        &larr; Projects
+        &larr; Back
       </button>
 
       <h2 className="project-name">{project.name}</h2>
@@ -114,6 +114,14 @@ export default function ProjectDetail({ project, onUpdate, onDelete, onBack }) {
       </div>
 
       <div className="danger-zone">
+        {onFinish && (
+          <button
+            className="btn btn-finish"
+            onClick={() => { if (confirm(`Mark "${project.name}" as finished?`)) onFinish() }}
+          >
+            Mark as Finished
+          </button>
+        )}
         <button
           className="btn btn-danger btn-sm"
           onClick={() => { if (confirm(`Delete "${project.name}"?`)) onDelete() }}
