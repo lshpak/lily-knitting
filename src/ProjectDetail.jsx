@@ -12,6 +12,7 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
   const [pdfUrl, setPdfUrl] = useState(null)
   const [showPdf, setShowPdf] = useState(false)
   const [yarnMode, setYarnMode] = useState(null)
+  const [newCounterName, setNewCounterName] = useState('')
   const fileRef = useRef()
 
   const linkedYarns = yarns.filter(y => y.projectId === project.id)
@@ -122,6 +123,29 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
 
   function formatSkeins(n) {
     return n % 1 === 0 ? n.toString() : n.toFixed(2).replace(/0$/, '')
+  }
+
+  const counters = project.counters || []
+
+  function addCounter(e) {
+    e.preventDefault()
+    const name = newCounterName.trim()
+    if (!name) return
+    const counter = { id: Date.now().toString(), name, count: 0 }
+    onUpdate({ counters: [...counters, counter] })
+    setNewCounterName('')
+  }
+
+  function updateCounter(id, delta) {
+    onUpdate({
+      counters: counters.map(c =>
+        c.id === id ? { ...c, count: Math.max(0, c.count + delta) } : c
+      ),
+    })
+  }
+
+  function deleteCounter(id) {
+    onUpdate({ counters: counters.filter(c => c.id !== id) })
   }
 
   return (
@@ -292,6 +316,53 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
           </div>
         )}
       </div>}
+
+      <div className="counters-section">
+        <label className="section-label">Counters</label>
+        {counters.length > 0 && (
+          <div className="items">
+            {counters.map(c => (
+              <div key={c.id} className="counter-card">
+                <span className="counter-name">{c.name}</span>
+                <div className="counter-controls">
+                  <button
+                    className="btn btn-skein"
+                    onClick={() => updateCounter(c.id, -1)}
+                    disabled={c.count === 0}
+                  >
+                    -1
+                  </button>
+                  <span className="counter-value">{c.count}</span>
+                  <button
+                    className="btn btn-skein"
+                    onClick={() => updateCounter(c.id, 1)}
+                  >
+                    +1
+                  </button>
+                  <button
+                    className="btn btn-ghost btn-sm delete-btn"
+                    onClick={() => deleteCounter(c.id)}
+                  >
+                    &times;
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <form onSubmit={addCounter} className="counter-form">
+          <input
+            type="text"
+            className="input input-sm"
+            placeholder="Counter name..."
+            value={newCounterName}
+            onChange={e => setNewCounterName(e.target.value)}
+          />
+          <button type="submit" className="btn btn-primary btn-sm" disabled={!newCounterName.trim()}>
+            Add
+          </button>
+        </form>
+      </div>
 
       <div className="pattern-section">
         <label className="section-label">Pattern</label>

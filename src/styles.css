@@ -490,6 +490,57 @@ body {
   gap: 10px;
 }
 
+/* Counters */
+.counters-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.counter-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.counter-name {
+  font-size: 15px;
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.counter-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.counter-value {
+  font-size: 18px;
+  font-weight: 700;
+  min-width: 36px;
+  text-align: center;
+  color: var(--rose);
+}
+
+.counter-form {
+  display: flex;
+  gap: 8px;
+}
+
+.counter-form .input {
+  flex: 1;
+}
+
 /* Pattern PDF */
 .pattern-section {
   display: flex;
