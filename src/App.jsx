@@ -40,7 +40,6 @@ export default function App() {
       createdAt: new Date().toISOString(),
     }
     setProjects([project, ...projects])
-    setActiveId(project.id)
   }
 
   function updateProject(id, updates) {
@@ -147,8 +146,8 @@ export default function App() {
     if (tab === 'todo') return (
       <TodoList
         unstartedProjects={unstartedProjects}
+        onAddProject={addProject}
         onStartProject={startProject}
-        onSelectProject={id => { setTab('wips'); setActiveId(id) }}
         onDeleteProject={deleteProject}
       />
     )
