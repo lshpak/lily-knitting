@@ -3,11 +3,12 @@ import { useStorage } from './useStorage'
 
 const EMPTY = { brand: '', name: '', colorName: '', weight: '', yards: '', grams: '', skeins: '' }
 
-export default function YarnStash() {
+export default function YarnStash({ projects }) {
   const [yarns, setYarns] = useStorage('lily-yarns', [])
   const [pastYarns, setPastYarns] = useStorage('lily-yarns-past', [])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
+  const [linkingId, setLinkingId] = useState(null)
 
   function set(field) {
     return e => setForm({ ...form, [field]: e.target.value })
@@ -26,6 +27,7 @@ export default function YarnStash() {
       yardsPerSkein: form.yards.trim(),
       grams: form.grams.trim(),
       skeins,
+      projectId: null,
     }, ...yarns])
     setForm(EMPTY)
     setShowForm(false)
@@ -42,6 +44,15 @@ export default function YarnStash() {
     } else {
       setYarns(yarns.map(y => y.id === id ? { ...y, skeins: next } : y))
     }
+  }
+
+  function linkToProject(yarnId, projectId) {
+    setYarns(yarns.map(y => y.id === yarnId ? { ...y, projectId } : y))
+    setLinkingId(null)
+  }
+
+  function unlinkFromProject(yarnId) {
+    setYarns(yarns.map(y => y.id === yarnId ? { ...y, projectId: null } : y))
   }
 
   function restoreYarn(id) {
@@ -83,6 +94,99 @@ export default function YarnStash() {
     if (yps) parts.push(`${yps} yds/skein`)
     if (yarn.grams) parts.push(`${yarn.grams}g/skein`)
     return parts.join(' · ')
+  }
+
+  function getProjectName(projectId) {
+    const p = projects.find(proj => proj.id === projectId)
+    return p ? p.name : null
+  }
+
+  const inUseYarns = yarns.filter(y => y.projectId && getProjectName(y.projectId))
+  const stashYarns = yarns.filter(y => !y.projectId || !getProjectName(y.projectId))
+
+  function renderYarnCard(yarn, isPast) {
+    const sk = getSkeins(yarn)
+    const total = totalYards(yarn)
+    const projectName = yarn.projectId ? getProjectName(yarn.projectId) : null
+
+    return (
+      <div key={yarn.id} className={`yarn-card ${isPast ? 'yarn-card-past' : ''}`}>
+        <div className="yarn-card-top">
+          <div className="yarn-card-info">
+            {yarn.brand && <span className="yarn-brand">{yarn.brand}</span>}
+            <h3>{yarn.name}</h3>
+            {yarn.colorName && <span className="yarn-color-name">{yarn.colorName}</span>}
+          </div>
+          <button className="btn btn-ghost btn-sm delete-btn" onClick={() => deleteYarn(yarn.id, isPast)}>
+            &times;
+          </button>
+        </div>
+        {metaLine(yarn) && (
+          <span className="yarn-meta">{metaLine(yarn)}</span>
+        )}
+        {!isPast && (
+          <>
+            <div className="yarn-skeins-row">
+              <button
+                className="btn btn-skein"
+                onClick={() => updateSkeins(yarn.id, -1)}
+                disabled={sk === 0}
+              >
+                &minus;
+              </button>
+              <span className="yarn-skein-count">
+                {sk} skein{sk === 1 ? '' : 's'}
+              </span>
+              <button
+                className="btn btn-skein"
+                onClick={() => updateSkeins(yarn.id, 1)}
+              >
+                +
+              </button>
+            </div>
+            {total !== null && (
+              <span className="yarn-total-yards">{total.toLocaleString()} total yards</span>
+            )}
+            {projectName ? (
+              <div className="yarn-project-link">
+                <span className="yarn-project-tag">For: {projectName}</span>
+                <button className="btn btn-ghost btn-sm" onClick={() => unlinkFromProject(yarn.id)}>
+                  Unlink
+                </button>
+              </div>
+            ) : linkingId === yarn.id ? (
+              <div className="yarn-link-picker">
+                {projects.length === 0 ? (
+                  <span className="yarn-link-empty">No WIPs to link to</span>
+                ) : (
+                  projects.map(p => (
+                    <button
+                      key={p.id}
+                      className="btn btn-ghost btn-sm yarn-link-option"
+                      onClick={() => linkToProject(yarn.id, p.id)}
+                    >
+                      {p.name}
+                    </button>
+                  ))
+                )}
+                <button className="btn btn-ghost btn-sm" onClick={() => setLinkingId(null)}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button className="btn btn-ghost btn-sm" onClick={() => setLinkingId(yarn.id)}>
+                Link to project
+              </button>
+            )}
+          </>
+        )}
+        {isPast && (
+          <button className="btn btn-ghost btn-sm" onClick={() => restoreYarn(yarn.id)}>
+            Restore to stash
+          </button>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -165,75 +269,29 @@ export default function YarnStash() {
         </div>
       )}
 
-      <div className="items">
-        {yarns.map(yarn => {
-          const sk = getSkeins(yarn)
-          const total = totalYards(yarn)
-          return (
-            <div key={yarn.id} className="yarn-card">
-              <div className="yarn-card-top">
-                <div className="yarn-card-info">
-                  {yarn.brand && <span className="yarn-brand">{yarn.brand}</span>}
-                  <h3>{yarn.name}</h3>
-                  {yarn.colorName && <span className="yarn-color-name">{yarn.colorName}</span>}
-                </div>
-                <button className="btn btn-ghost btn-sm delete-btn" onClick={() => deleteYarn(yarn.id, false)}>
-                  &times;
-                </button>
-              </div>
-              {metaLine(yarn) && (
-                <span className="yarn-meta">{metaLine(yarn)}</span>
-              )}
-              <div className="yarn-skeins-row">
-                <button
-                  className="btn btn-skein"
-                  onClick={() => updateSkeins(yarn.id, -1)}
-                  disabled={sk === 0}
-                >
-                  &minus;
-                </button>
-                <span className="yarn-skein-count">
-                  {sk} skein{sk === 1 ? '' : 's'}
-                </span>
-                <button
-                  className="btn btn-skein"
-                  onClick={() => updateSkeins(yarn.id, 1)}
-                >
-                  +
-                </button>
-              </div>
-              {total !== null && (
-                <span className="yarn-total-yards">{total.toLocaleString()} total yards</span>
-              )}
-            </div>
-          )
-        })}
-      </div>
+      {inUseYarns.length > 0 && (
+        <>
+          <p className="completed-label">In Use ({inUseYarns.length})</p>
+          <div className="items">
+            {inUseYarns.map(yarn => renderYarnCard(yarn, false))}
+          </div>
+        </>
+      )}
+
+      {stashYarns.length > 0 && (
+        <>
+          {inUseYarns.length > 0 && <p className="completed-label">Stash ({stashYarns.length})</p>}
+          <div className="items">
+            {stashYarns.map(yarn => renderYarnCard(yarn, false))}
+          </div>
+        </>
+      )}
 
       {pastYarns.length > 0 && (
         <>
           <p className="completed-label">Past Stash ({pastYarns.length})</p>
           <div className="items">
-            {pastYarns.map(yarn => (
-              <div key={yarn.id} className="yarn-card yarn-card-past">
-                <div className="yarn-card-top">
-                  <div className="yarn-card-info">
-                    {yarn.brand && <span className="yarn-brand">{yarn.brand}</span>}
-                    <h3>{yarn.name}</h3>
-                    {yarn.colorName && <span className="yarn-color-name">{yarn.colorName}</span>}
-                  </div>
-                  <button className="btn btn-ghost btn-sm delete-btn" onClick={() => deleteYarn(yarn.id, true)}>
-                    &times;
-                  </button>
-                </div>
-                {metaLine(yarn) && (
-                  <span className="yarn-meta">{metaLine(yarn)}</span>
-                )}
-                <button className="btn btn-ghost btn-sm" onClick={() => restoreYarn(yarn.id)}>
-                  Restore to stash
-                </button>
-              </div>
-            ))}
+            {pastYarns.map(yarn => renderYarnCard(yarn, true))}
           </div>
         </>
       )}

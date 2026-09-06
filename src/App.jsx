@@ -81,7 +81,7 @@ export default function App() {
         />
       )
     }
-    if (tab === 'yarn') return <YarnStash />
+    if (tab === 'yarn') return <YarnStash projects={projects} />
     if (tab === 'finished') return <FinishedProjects />
     if (tab === 'todo') return <TodoList />
     if (tab === 'stats') return <Stats />
