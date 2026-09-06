@@ -1,28 +1,32 @@
 import { useState } from 'react'
 import { useStorage } from './useStorage'
 
+const EMPTY = { brand: '', name: '', colorName: '', color: '#b56576', weight: '', yards: '', grams: '', skeins: '' }
+
 export default function YarnStash() {
   const [yarns, setYarns] = useStorage('lily-yarns', [])
   const [showForm, setShowForm] = useState(false)
-  const [name, setName] = useState('')
-  const [color, setColor] = useState('#b56576')
-  const [weight, setWeight] = useState('')
-  const [quantity, setQuantity] = useState('')
+  const [form, setForm] = useState(EMPTY)
+
+  function set(field) {
+    return e => setForm({ ...form, [field]: e.target.value })
+  }
 
   function handleSubmit(e) {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!form.brand.trim() && !form.name.trim()) return
     setYarns([{
       id: Date.now().toString(),
-      name: name.trim(),
-      color,
-      weight: weight.trim(),
-      quantity: quantity.trim(),
+      brand: form.brand.trim(),
+      name: form.name.trim(),
+      colorName: form.colorName.trim(),
+      color: form.color,
+      weight: form.weight.trim(),
+      yards: form.yards.trim(),
+      grams: form.grams.trim(),
+      skeins: form.skeins.trim(),
     }, ...yarns])
-    setName('')
-    setColor('#b56576')
-    setWeight('')
-    setQuantity('')
+    setForm(EMPTY)
     setShowForm(false)
   }
 
@@ -30,6 +34,15 @@ export default function YarnStash() {
     if (confirm('Remove this yarn?')) {
       setYarns(yarns.filter(y => y.id !== id))
     }
+  }
+
+  function metaLine(yarn) {
+    const parts = []
+    if (yarn.weight) parts.push(yarn.weight)
+    if (yarn.yards) parts.push(`${yarn.yards} yds`)
+    if (yarn.grams) parts.push(`${yarn.grams}g`)
+    if (yarn.skeins) parts.push(`${yarn.skeins} skein${yarn.skeins === '1' ? '' : 's'}`)
+    return parts.join(' · ')
   }
 
   return (
@@ -43,35 +56,70 @@ export default function YarnStash() {
           <input
             autoFocus
             type="text"
-            placeholder="Yarn name / brand..."
-            value={name}
-            onChange={e => setName(e.target.value)}
+            placeholder="Brand (e.g. Malabrigo)"
+            value={form.brand}
+            onChange={set('brand')}
+            className="input"
+          />
+          <input
+            type="text"
+            placeholder="Yarn name (e.g. Rios)"
+            value={form.name}
+            onChange={set('name')}
             className="input"
           />
           <div className="form-row">
             <label className="color-picker">
-              <input type="color" value={color} onChange={e => setColor(e.target.value)} />
-              <span className="color-swatch" style={{ background: color }} />
-              Color
+              <input type="color" value={form.color} onChange={set('color')} />
+              <span className="color-swatch" style={{ background: form.color }} />
             </label>
             <input
               type="text"
-              placeholder="Weight (DK, Worsted...)"
-              value={weight}
-              onChange={e => setWeight(e.target.value)}
-              className="input input-sm"
+              placeholder="Color name"
+              value={form.colorName}
+              onChange={set('colorName')}
+              className="input"
+              style={{ flex: 1 }}
             />
           </div>
           <input
             type="text"
-            placeholder="Quantity (e.g. 3 skeins)"
-            value={quantity}
-            onChange={e => setQuantity(e.target.value)}
+            placeholder="Weight (DK, Worsted, Bulky...)"
+            value={form.weight}
+            onChange={set('weight')}
+            className="input"
+          />
+          <div className="form-row">
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="Yards"
+              value={form.yards}
+              onChange={set('yards')}
+              className="input"
+              style={{ flex: 1 }}
+            />
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="Grams"
+              value={form.grams}
+              onChange={set('grams')}
+              className="input"
+              style={{ flex: 1 }}
+            />
+          </div>
+          <input
+            type="text"
+            inputMode="numeric"
+            placeholder="Total skeins"
+            value={form.skeins}
+            onChange={set('skeins')}
             className="input"
           />
           <div className="form-actions">
-            <button type="submit" className="btn btn-primary" disabled={!name.trim()}>Add</button>
-            <button type="button" className="btn btn-ghost" onClick={() => setShowForm(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={!form.brand.trim() && !form.name.trim()}>Add</button>
+            <button type="button" className="btn btn-ghost" onClick={() => { setShowForm(false); setForm(EMPTY) }}>Cancel</button>
           </div>
         </form>
       )}
@@ -86,19 +134,21 @@ export default function YarnStash() {
 
       <div className="items">
         {yarns.map(yarn => (
-          <div key={yarn.id} className="item-card">
-            <div className="item-card-left">
+          <div key={yarn.id} className="yarn-card">
+            <div className="yarn-card-top">
               <span className="yarn-dot" style={{ background: yarn.color }} />
-              <div className="item-card-info">
+              <div className="yarn-card-info">
+                {yarn.brand && <span className="yarn-brand">{yarn.brand}</span>}
                 <h3>{yarn.name}</h3>
-                <span className="item-card-meta">
-                  {[yarn.weight, yarn.quantity].filter(Boolean).join(' · ') || ' '}
-                </span>
+                {yarn.colorName && <span className="yarn-color-name">{yarn.colorName}</span>}
               </div>
+              <button className="btn btn-ghost btn-sm delete-btn" onClick={() => deleteYarn(yarn.id)}>
+                &times;
+              </button>
             </div>
-            <button className="btn btn-ghost btn-sm delete-btn" onClick={() => deleteYarn(yarn.id)}>
-              &times;
-            </button>
+            {metaLine(yarn) && (
+              <span className="yarn-meta">{metaLine(yarn)}</span>
+            )}
           </div>
         ))}
       </div>
