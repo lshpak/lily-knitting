@@ -15,8 +15,6 @@ export default function App() {
     const project = {
       id: Date.now().toString(),
       name,
-      rowCount: 0,
-      totalRows: null,
       notes: '',
       createdAt: new Date().toISOString(),
     }

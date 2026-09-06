@@ -53,10 +53,6 @@ export default function ProjectList({ projects, onSelect, onAdd, onDelete }) {
           <div key={project.id} className="project-card" onClick={() => onSelect(project.id)}>
             <div className="project-card-info">
               <h3>{project.name}</h3>
-              <span className="project-card-count">
-                Row {project.rowCount}
-                {project.totalRows ? ` / ${project.totalRows}` : ''}
-              </span>
             </div>
             <button
               className="btn btn-ghost btn-sm delete-btn"

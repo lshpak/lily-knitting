@@ -109,41 +109,6 @@ body {
   padding: 6px 12px;
 }
 
-.btn-counter {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  font-size: 32px;
-  font-weight: 300;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-plus {
-  background: var(--rose);
-  color: white;
-}
-
-.btn-plus:active {
-  background: var(--rose-dark);
-  transform: scale(0.93);
-}
-
-.btn-minus {
-  background: var(--warm-white);
-  color: var(--text);
-  border: 2px solid var(--border);
-}
-
-.btn-minus:active {
-  background: var(--border);
-  transform: scale(0.93);
-}
-
-.btn-minus:disabled {
-  opacity: 0.3;
-}
 
 /* Input */
 .input {
@@ -236,10 +201,6 @@ body {
   margin-bottom: 2px;
 }
 
-.project-card-count {
-  font-size: 13px;
-  color: var(--text-light);
-}
 
 .delete-btn {
   font-size: 20px;
@@ -264,84 +225,6 @@ body {
   font-weight: 700;
 }
 
-/* Counter */
-.counter-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 24px;
-  background: var(--warm-white);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-
-.counter-display {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.counter-label {
-  font-size: 14px;
-  color: var(--text-light);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.counter-number {
-  font-size: 72px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--rose);
-}
-
-.counter-total {
-  font-size: 16px;
-  color: var(--text-light);
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: var(--border);
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--rose);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.progress-text {
-  position: absolute;
-  right: 0;
-  top: 12px;
-  font-size: 12px;
-  color: var(--text-light);
-}
-
-.counter-controls {
-  display: flex;
-  gap: 24px;
-  margin-top: 8px;
-}
-
-.counter-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.goal-form {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
 
 /* Pattern PDF */
 .pattern-section {
