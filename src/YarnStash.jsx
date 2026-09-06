@@ -15,7 +15,7 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
     const yarn = yarns.find(y => y.id === id)
     if (!yarn) return
     const current = getSkeins(yarn)
-    const next = Math.max(0, current + delta)
+    const next = round(Math.max(0, current + delta))
     if (next === 0) {
       moveYarnToPast(id)
     } else {
@@ -42,7 +42,15 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
   }
 
   function getSkeins(yarn) {
-    return typeof yarn.skeins === 'number' ? yarn.skeins : (parseInt(yarn.skeins, 10) || 0)
+    return typeof yarn.skeins === 'number' ? yarn.skeins : (parseFloat(yarn.skeins) || 0)
+  }
+
+  function round(n) {
+    return Math.round(n * 100) / 100
+  }
+
+  function formatSkeins(n) {
+    return n % 1 === 0 ? n.toString() : n.toFixed(2).replace(/0$/, '')
   }
 
   function getYardsPerSkein(yarn) {
@@ -98,20 +106,33 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
           <>
             <div className="yarn-skeins-row">
               <button
+                className="btn btn-skein btn-skein-sm"
+                onClick={() => updateSkeins(yarn.id, -0.25)}
+                disabled={sk < 0.25}
+              >
+                -.25
+              </button>
+              <button
                 className="btn btn-skein"
                 onClick={() => updateSkeins(yarn.id, -1)}
-                disabled={sk === 0}
+                disabled={sk < 1}
               >
-                &minus;
+                -1
               </button>
               <span className="yarn-skein-count">
-                {sk} skein{sk === 1 ? '' : 's'}
+                {formatSkeins(sk)}
               </span>
               <button
                 className="btn btn-skein"
                 onClick={() => updateSkeins(yarn.id, 1)}
               >
-                +
+                +1
+              </button>
+              <button
+                className="btn btn-skein btn-skein-sm"
+                onClick={() => updateSkeins(yarn.id, 0.25)}
+              >
+                +.25
               </button>
             </div>
             {total !== null && (

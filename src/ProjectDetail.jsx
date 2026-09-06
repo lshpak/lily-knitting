@@ -94,26 +94,34 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
     })
   }
 
-  function useSkein(yarnId) {
+  function useSkein(yarnId, amount) {
     const yarn = yarns.find(y => y.id === yarnId)
-    if (!yarn || getSkeins(yarn) <= 0) return
+    if (!yarn || getSkeins(yarn) < amount) return
     yarnActions.updateYarn(yarnId, {
-      skeins: getSkeins(yarn) - 1,
-      skeinsUsed: (yarn.skeinsUsed || 0) + 1,
+      skeins: round(getSkeins(yarn) - amount),
+      skeinsUsed: round((yarn.skeinsUsed || 0) + amount),
     })
   }
 
-  function returnSkein(yarnId) {
+  function returnSkein(yarnId, amount) {
     const yarn = yarns.find(y => y.id === yarnId)
-    if (!yarn || (yarn.skeinsUsed || 0) <= 0) return
+    if (!yarn || (yarn.skeinsUsed || 0) < amount) return
     yarnActions.updateYarn(yarnId, {
-      skeins: getSkeins(yarn) + 1,
-      skeinsUsed: (yarn.skeinsUsed || 0) - 1,
+      skeins: round(getSkeins(yarn) + amount),
+      skeinsUsed: round((yarn.skeinsUsed || 0) - amount),
     })
   }
 
   function getSkeins(yarn) {
-    return typeof yarn.skeins === 'number' ? yarn.skeins : (parseInt(yarn.skeins, 10) || 0)
+    return typeof yarn.skeins === 'number' ? yarn.skeins : (parseFloat(yarn.skeins) || 0)
+  }
+
+  function round(n) {
+    return Math.round(n * 100) / 100
+  }
+
+  function formatSkeins(n) {
+    return n % 1 === 0 ? n.toString() : n.toFixed(2).replace(/0$/, '')
   }
 
   return (
@@ -161,8 +169,8 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
       ) : (
         <div className="project-header">
           <div>
+            {project.type && <span className="project-tag">{project.type}</span>}
             <h2 className="project-name">{project.name}</h2>
-            {project.type && <span className="project-type">{project.type}</span>}
             {project.designer && <span className="project-meta">by {project.designer}</span>}
             {project.size && <span className="project-meta">Size: {project.size}</span>}
           </div>
@@ -195,24 +203,38 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
                   <div className="project-yarn-usage">
                     <div className="yarn-skeins-row">
                       <button
-                        className="btn btn-skein"
-                        onClick={() => returnSkein(yarn.id)}
-                        disabled={used === 0}
+                        className="btn btn-skein btn-skein-sm"
+                        onClick={() => returnSkein(yarn.id, 0.25)}
+                        disabled={used < 0.25}
                       >
-                        &minus;
+                        -.25
+                      </button>
+                      <button
+                        className="btn btn-skein"
+                        onClick={() => returnSkein(yarn.id, 1)}
+                        disabled={used < 1}
+                      >
+                        -1
                       </button>
                       <span className="yarn-skein-count">
-                        {used} used
+                        {formatSkeins(used)}
                       </span>
                       <button
                         className="btn btn-skein"
-                        onClick={() => useSkein(yarn.id)}
-                        disabled={remaining === 0}
+                        onClick={() => useSkein(yarn.id, 1)}
+                        disabled={remaining < 1}
                       >
-                        +
+                        +1
+                      </button>
+                      <button
+                        className="btn btn-skein btn-skein-sm"
+                        onClick={() => useSkein(yarn.id, 0.25)}
+                        disabled={remaining < 0.25}
+                      >
+                        +.25
                       </button>
                     </div>
-                    <span className="yarn-remaining">{remaining} left in stash</span>
+                    <span className="yarn-remaining">used · {formatSkeins(remaining)} left in stash</span>
                     {yps > 0 && used > 0 && (
                       <span className="yarn-total-yards">{(yps * used).toLocaleString()} yards used</span>
                     )}

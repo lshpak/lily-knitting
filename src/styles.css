@@ -329,9 +329,23 @@ body {
   font-weight: 600;
 }
 
-.project-card-type {
+.project-tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rose);
+  background: var(--rose-light);
+  padding: 2px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.project-card-meta {
   font-size: 13px;
   color: var(--text-light);
+  display: block;
+  margin-top: 2px;
 }
 
 /* Project detail */
@@ -358,9 +372,12 @@ body {
   font-weight: 700;
 }
 
-.project-type {
-  font-size: 15px;
-  color: var(--text-light);
+.btn-skein-sm {
+  width: 40px;
+  height: 28px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .project-meta {
@@ -645,7 +662,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 8px;
   padding-top: 4px;
 }
 

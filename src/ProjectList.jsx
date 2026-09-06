@@ -79,10 +79,11 @@ export default function ProjectList({ projects, onSelect, onAdd, onDelete }) {
         {projects.map(project => (
           <div key={project.id} className="project-card" onClick={() => onSelect(project.id)}>
             <div className="project-card-info">
+              {project.type && <span className="project-tag">{project.type}</span>}
               <h3>{project.name}</h3>
-              {(project.type || project.designer || project.size) && (
-                <span className="project-card-type">
-                  {[project.type, project.designer ? `by ${project.designer}` : '', project.size ? `Size ${project.size}` : ''].filter(Boolean).join(' · ')}
+              {(project.designer || project.size) && (
+                <span className="project-card-meta">
+                  {[project.designer ? `by ${project.designer}` : '', project.size ? `Size ${project.size}` : ''].filter(Boolean).join(' · ')}
                 </span>
               )}
             </div>
