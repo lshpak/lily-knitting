@@ -515,6 +515,50 @@ body {
   border-top: 1px solid var(--border);
 }
 
+.yarn-skeins-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+.btn-skein {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cream);
+  color: var(--text);
+  border: 2px solid var(--border);
+}
+
+.btn-skein:active {
+  background: var(--border);
+  transform: scale(0.93);
+}
+
+.btn-skein:disabled {
+  opacity: 0.3;
+}
+
+.yarn-skein-count {
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 80px;
+  text-align: center;
+}
+
+.yarn-total-yards {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rose);
+  text-align: center;
+}
 
 /* Todo */
 .todo-form {
