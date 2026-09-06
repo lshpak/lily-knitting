@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useStorage } from './useStorage'
+import { deletePDF } from './pdfStorage'
 import ProjectList from './ProjectList'
 import ProjectDetail from './ProjectDetail'
 import './styles.css'
@@ -29,6 +30,7 @@ export default function App() {
 
   function deleteProject(id) {
     setProjects(projects.filter(p => p.id !== id))
+    deletePDF(id)
     if (activeId === id) setActiveId(null)
   }
 
