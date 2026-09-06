@@ -27,11 +27,13 @@ export default function App() {
 
   const activeProject = projects.find(p => p.id === activeId)
 
-  function addProject(name, type) {
+  function addProject({ name, type, designer, size }) {
     const project = {
       id: Date.now().toString(),
       name,
       type: type || '',
+      designer: designer || '',
+      size: size || '',
       notes: '',
       createdAt: new Date().toISOString(),
     }

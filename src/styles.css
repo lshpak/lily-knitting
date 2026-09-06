@@ -363,6 +363,12 @@ body {
   color: var(--text-light);
 }
 
+.project-meta {
+  font-size: 14px;
+  color: var(--text-light);
+  display: block;
+}
+
 .edit-project-form {
   display: flex;
   flex-direction: column;

@@ -6,6 +6,8 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState(project.name)
   const [editType, setEditType] = useState(project.type || '')
+  const [editDesigner, setEditDesigner] = useState(project.designer || '')
+  const [editSize, setEditSize] = useState(project.size || '')
   const [pdf, setPdf] = useState(null)
   const [pdfUrl, setPdfUrl] = useState(null)
   const [showPdf, setShowPdf] = useState(false)
@@ -18,13 +20,15 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
   function startEditing() {
     setEditName(project.name)
     setEditType(project.type || '')
+    setEditDesigner(project.designer || '')
+    setEditSize(project.size || '')
     setEditing(true)
   }
 
   function saveEdit() {
     const trimmed = editName.trim()
     if (!trimmed) return
-    onUpdate({ name: trimmed, type: editType.trim() })
+    onUpdate({ name: trimmed, type: editType.trim(), designer: editDesigner.trim(), size: editSize.trim() })
     setEditing(false)
   }
 
@@ -135,6 +139,20 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
             className="input"
             placeholder="Type (sweater, scarf, hat...)"
           />
+          <input
+            type="text"
+            value={editDesigner}
+            onChange={e => setEditDesigner(e.target.value)}
+            className="input"
+            placeholder="Pattern designer"
+          />
+          <input
+            type="text"
+            value={editSize}
+            onChange={e => setEditSize(e.target.value)}
+            className="input"
+            placeholder="Size (S, M, L, 40in chest...)"
+          />
           <div className="form-actions">
             <button className="btn btn-primary btn-sm" onClick={saveEdit} disabled={!editName.trim()}>Save</button>
             <button className="btn btn-ghost btn-sm" onClick={() => setEditing(false)}>Cancel</button>
@@ -145,6 +163,8 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
           <div>
             <h2 className="project-name">{project.name}</h2>
             {project.type && <span className="project-type">{project.type}</span>}
+            {project.designer && <span className="project-meta">by {project.designer}</span>}
+            {project.size && <span className="project-meta">Size: {project.size}</span>}
           </div>
           <button className="btn btn-ghost btn-sm" onClick={startEditing}>Edit</button>
         </div>
