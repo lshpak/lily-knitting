@@ -25,10 +25,11 @@ export default function App() {
 
   const activeProject = projects.find(p => p.id === activeId)
 
-  function addProject(name) {
+  function addProject(name, type) {
     const project = {
       id: Date.now().toString(),
       name,
+      type: type || '',
       notes: '',
       createdAt: new Date().toISOString(),
     }

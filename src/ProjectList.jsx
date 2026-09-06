@@ -2,14 +2,16 @@ import { useState } from 'react'
 
 export default function ProjectList({ projects, onSelect, onAdd, onDelete }) {
   const [name, setName] = useState('')
+  const [type, setType] = useState('')
   const [showInput, setShowInput] = useState(false)
 
   function handleSubmit(e) {
     e.preventDefault()
     const trimmed = name.trim()
     if (!trimmed) return
-    onAdd(trimmed)
+    onAdd(trimmed, type.trim())
     setName('')
+    setType('')
     setShowInput(false)
   }
 
@@ -29,11 +31,18 @@ export default function ProjectList({ projects, onSelect, onAdd, onDelete }) {
             onChange={e => setName(e.target.value)}
             className="input"
           />
+          <input
+            type="text"
+            placeholder="Type (sweater, scarf, hat, socks...)"
+            value={type}
+            onChange={e => setType(e.target.value)}
+            className="input"
+          />
           <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={!name.trim()}>
               Create
             </button>
-            <button type="button" className="btn btn-ghost" onClick={() => { setShowInput(false); setName('') }}>
+            <button type="button" className="btn btn-ghost" onClick={() => { setShowInput(false); setName(''); setType('') }}>
               Cancel
             </button>
           </div>
@@ -53,6 +62,7 @@ export default function ProjectList({ projects, onSelect, onAdd, onDelete }) {
           <div key={project.id} className="project-card" onClick={() => onSelect(project.id)}>
             <div className="project-card-info">
               <h3>{project.name}</h3>
+              {project.type && <span className="project-card-type">{project.type}</span>}
             </div>
             <button
               className="btn btn-ghost btn-sm delete-btn"

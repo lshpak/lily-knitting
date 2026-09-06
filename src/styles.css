@@ -329,6 +329,11 @@ body {
   font-weight: 600;
 }
 
+.project-card-type {
+  font-size: 13px;
+  color: var(--text-light);
+}
+
 /* Project detail */
 .project-detail {
   display: flex;
@@ -344,6 +349,12 @@ body {
 .project-name {
   font-size: 24px;
   font-weight: 700;
+}
+
+.project-type {
+  font-size: 15px;
+  color: var(--text-light);
+  margin-top: -16px;
 }
 
 /* Pattern PDF */

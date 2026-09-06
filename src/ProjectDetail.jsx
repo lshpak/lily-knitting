@@ -55,6 +55,7 @@ export default function ProjectDetail({ project, onUpdate, onDelete, onFinish, o
       </button>
 
       <h2 className="project-name">{project.name}</h2>
+      {project.type && <span className="project-type">{project.type}</span>}
 
       <div className="pattern-section">
         <label className="section-label">Pattern</label>
