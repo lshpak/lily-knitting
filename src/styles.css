@@ -348,6 +348,25 @@ body {
   margin-top: 2px;
 }
 
+.project-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.start-date-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.start-date-picker .input {
+  width: 130px;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
 /* Project detail */
 .project-detail {
   display: flex;

@@ -26,6 +26,8 @@ export default function App() {
   const [activeId, setActiveId] = useState(null)
 
   const activeProject = projects.find(p => p.id === activeId)
+  const wipProjects = projects.filter(p => p.startedAt)
+  const unstartedProjects = projects.filter(p => !p.startedAt)
 
   function addProject({ name, type, designer, size }) {
     const project = {
@@ -59,6 +61,12 @@ export default function App() {
     setProjects(projects.filter(p => p.id !== id))
     setYarns(yarns.map(y => y.projectId === id ? { ...y, projectId: null } : y))
     setActiveId(null)
+  }
+
+  function startProject(id, date) {
+    setProjects(projects.map(p => p.id === id ? { ...p, startedAt: date } : p))
+    setTab('wips')
+    setActiveId(id)
   }
 
   function addYarn(yarnData) {
@@ -120,7 +128,7 @@ export default function App() {
       }
       return (
         <ProjectList
-          projects={projects}
+          projects={wipProjects}
           onSelect={setActiveId}
           onAdd={addProject}
           onDelete={deleteProject}
@@ -136,7 +144,14 @@ export default function App() {
       />
     )
     if (tab === 'finished') return <FinishedProjects />
-    if (tab === 'todo') return <TodoList />
+    if (tab === 'todo') return (
+      <TodoList
+        unstartedProjects={unstartedProjects}
+        onStartProject={startProject}
+        onSelectProject={id => { setTab('wips'); setActiveId(id) }}
+        onDeleteProject={deleteProject}
+      />
+    )
     if (tab === 'stats') return <Stats />
   }
 

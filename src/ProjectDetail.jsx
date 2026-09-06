@@ -197,6 +197,7 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
             <h2 className="project-name">{project.name}</h2>
             {project.designer && <span className="project-meta">by {project.designer}</span>}
             {project.size && <span className="project-meta">Size: {project.size}</span>}
+            {project.startedAt && <span className="project-meta">Started: {project.startedAt}</span>}
           </div>
           <button className="btn btn-ghost btn-sm" onClick={startEditing}>Edit</button>
         </div>
