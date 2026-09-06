@@ -5,6 +5,7 @@ const EMPTY = { brand: '', name: '', colorName: '', weight: '', yards: '', grams
 
 export default function YarnStash() {
   const [yarns, setYarns] = useStorage('lily-yarns', [])
+  const [pastYarns, setPastYarns] = useStorage('lily-yarns-past', [])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY)
 
@@ -31,15 +32,30 @@ export default function YarnStash() {
   }
 
   function updateSkeins(id, delta) {
-    setYarns(yarns.map(y => {
-      if (y.id !== id) return y
-      const current = typeof y.skeins === 'number' ? y.skeins : (parseInt(y.skeins, 10) || 0)
-      return { ...y, skeins: Math.max(0, current + delta) }
-    }))
+    const yarn = yarns.find(y => y.id === id)
+    if (!yarn) return
+    const current = getSkeins(yarn)
+    const next = Math.max(0, current + delta)
+    if (next === 0) {
+      setPastYarns([{ ...yarn, skeins: 0 }, ...pastYarns])
+      setYarns(yarns.filter(y => y.id !== id))
+    } else {
+      setYarns(yarns.map(y => y.id === id ? { ...y, skeins: next } : y))
+    }
   }
 
-  function deleteYarn(id) {
-    if (confirm('Remove this yarn?')) {
+  function restoreYarn(id) {
+    const yarn = pastYarns.find(y => y.id === id)
+    if (!yarn) return
+    setYarns([{ ...yarn, skeins: 1 }, ...yarns])
+    setPastYarns(pastYarns.filter(y => y.id !== id))
+  }
+
+  function deleteYarn(id, past) {
+    if (!confirm('Remove this yarn?')) return
+    if (past) {
+      setPastYarns(pastYarns.filter(y => y.id !== id))
+    } else {
       setYarns(yarns.filter(y => y.id !== id))
     }
   }
@@ -141,7 +157,7 @@ export default function YarnStash() {
         </form>
       )}
 
-      {yarns.length === 0 && !showForm && (
+      {yarns.length === 0 && !showForm && pastYarns.length === 0 && (
         <div className="empty-state">
           <div className="empty-icon">🧵</div>
           <p>No yarn yet</p>
@@ -161,7 +177,7 @@ export default function YarnStash() {
                   <h3>{yarn.name}</h3>
                   {yarn.colorName && <span className="yarn-color-name">{yarn.colorName}</span>}
                 </div>
-                <button className="btn btn-ghost btn-sm delete-btn" onClick={() => deleteYarn(yarn.id)}>
+                <button className="btn btn-ghost btn-sm delete-btn" onClick={() => deleteYarn(yarn.id, false)}>
                   &times;
                 </button>
               </div>
@@ -193,6 +209,34 @@ export default function YarnStash() {
           )
         })}
       </div>
+
+      {pastYarns.length > 0 && (
+        <>
+          <p className="completed-label">Past Stash ({pastYarns.length})</p>
+          <div className="items">
+            {pastYarns.map(yarn => (
+              <div key={yarn.id} className="yarn-card yarn-card-past">
+                <div className="yarn-card-top">
+                  <div className="yarn-card-info">
+                    {yarn.brand && <span className="yarn-brand">{yarn.brand}</span>}
+                    <h3>{yarn.name}</h3>
+                    {yarn.colorName && <span className="yarn-color-name">{yarn.colorName}</span>}
+                  </div>
+                  <button className="btn btn-ghost btn-sm delete-btn" onClick={() => deleteYarn(yarn.id, true)}>
+                    &times;
+                  </button>
+                </div>
+                {metaLine(yarn) && (
+                  <span className="yarn-meta">{metaLine(yarn)}</span>
+                )}
+                <button className="btn btn-ghost btn-sm" onClick={() => restoreYarn(yarn.id)}>
+                  Restore to stash
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

@@ -560,6 +560,10 @@ body {
   text-align: center;
 }
 
+.yarn-card-past {
+  opacity: 0.6;
+}
+
 /* Todo */
 .todo-form {
   display: flex;
