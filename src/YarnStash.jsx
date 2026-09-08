@@ -66,12 +66,20 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
     return yps * sk
   }
 
+  function lengthLabel(yarn) {
+    return yarn.lengthUnit === 'meters' ? 'm' : 'yds'
+  }
+
+  function weightLabel(yarn) {
+    return yarn.weightUnit === 'ounces' ? 'oz' : 'g'
+  }
+
   function metaLine(yarn) {
     const parts = []
     if (yarn.weight) parts.push(yarn.weight)
     const yps = getYardsPerSkein(yarn)
-    if (yps) parts.push(`${yps} yds/skein`)
-    if (yarn.grams) parts.push(`${yarn.grams}g/skein`)
+    if (yps) parts.push(`${yps} ${lengthLabel(yarn)}/skein`)
+    if (yarn.grams) parts.push(`${yarn.grams}${weightLabel(yarn)}/skein`)
     return parts.join(' · ')
   }
 
@@ -146,7 +154,7 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
               </button>
             </div>
             {total !== null && (
-              <span className="yarn-total-yards">{total.toLocaleString()} total yards</span>
+              <span className="yarn-total-yards">{total.toLocaleString()} total {yarn.lengthUnit === 'meters' ? 'meters' : 'yards'}</span>
             )}
             {projectName ? (
               <div className="yarn-project-link">

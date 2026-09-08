@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const EMPTY = { brand: '', name: '', colorName: '', weight: '', yards: '', grams: '', skeins: '' }
+const EMPTY = { brand: '', name: '', colorName: '', weight: '', yards: '', lengthUnit: 'yards', grams: '', weightUnit: 'grams', skeins: '' }
 
 export default function YarnForm({ onSubmit, onCancel }) {
   const [form, setForm] = useState(EMPTY)
@@ -18,7 +18,9 @@ export default function YarnForm({ onSubmit, onCancel }) {
       colorName: form.colorName.trim(),
       weight: form.weight.trim(),
       yardsPerSkein: form.yards.trim(),
+      lengthUnit: form.lengthUnit,
       grams: form.grams.trim(),
+      weightUnit: form.weightUnit,
       skeins: parseFloat(form.skeins) || 0,
       projectId: null,
     })
@@ -60,21 +62,39 @@ export default function YarnForm({ onSubmit, onCancel }) {
         <input
           type="text"
           inputMode="numeric"
-          placeholder="Yards per skein"
+          placeholder={`${form.lengthUnit === 'yards' ? 'Yards' : 'Meters'} per skein`}
           value={form.yards}
           onChange={set('yards')}
           className="input"
           style={{ flex: 1 }}
         />
+        <select
+          className="input unit-select"
+          value={form.lengthUnit}
+          onChange={set('lengthUnit')}
+        >
+          <option value="yards">yards</option>
+          <option value="meters">meters</option>
+        </select>
+      </div>
+      <div className="form-row">
         <input
           type="text"
           inputMode="numeric"
-          placeholder="Grams per skein"
+          placeholder={`${form.weightUnit === 'grams' ? 'Grams' : 'Ounces'} per skein`}
           value={form.grams}
           onChange={set('grams')}
           className="input"
           style={{ flex: 1 }}
         />
+        <select
+          className="input unit-select"
+          value={form.weightUnit}
+          onChange={set('weightUnit')}
+        >
+          <option value="grams">grams</option>
+          <option value="ounces">ounces</option>
+        </select>
       </div>
       <div className="skeins-input-row">
         <button type="button" className="btn btn-skein" onClick={() => setForm({ ...form, skeins: String(Math.max(0, (parseFloat(form.skeins) || 0) - 0.25)) })}>

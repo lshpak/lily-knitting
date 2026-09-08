@@ -312,6 +312,14 @@ body {
   align-items: center;
 }
 
+.unit-select {
+  width: auto;
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  font-size: 14px;
+  appearance: auto;
+}
+
 .skeins-input-row {
   display: flex;
   align-items: center;
