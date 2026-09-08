@@ -629,6 +629,27 @@ body {
   width: 100%;
 }
 
+.pattern-link-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pattern-link-btn {
+  flex: 1;
+}
+
+.pattern-linked-tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rose);
+}
+
+.pattern-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .pdf-viewer {
   border-radius: var(--radius);
   overflow: hidden;
@@ -640,6 +661,78 @@ body {
   height: 70vh;
   border: none;
   display: block;
+}
+
+/* Pattern bank */
+.bank-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.bank-card-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.bank-card-info {
+  min-width: 0;
+}
+
+.bank-card-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bank-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.bank-pdf-viewer {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.bank-linked-projects {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rose);
+  margin-top: 2px;
+}
+
+.bank-link-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.bank-picker {
+  margin-top: 6px;
+}
+
+.bank-new-project {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 14px 16px;
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
 
 /* Notes */

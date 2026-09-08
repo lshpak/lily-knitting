@@ -7,11 +7,13 @@ import YarnStash from './YarnStash'
 import FinishedProjects from './FinishedProjects'
 import Stats from './Stats'
 import TodoList from './TodoList'
+import PatternBank from './PatternBank'
 import './styles.css'
 
 const TABS = [
   { id: 'wips', label: 'WIPs', icon: '🧶' },
   { id: 'yarn', label: 'Yarn', icon: '🧵' },
+  { id: 'patterns', label: 'Patterns', icon: '📄' },
   { id: 'finished', label: 'Done', icon: '🏆' },
   { id: 'todo', label: 'To-Do', icon: '📝' },
   { id: 'stats', label: 'Stats', icon: '📊' },
@@ -23,23 +25,27 @@ export default function App() {
   const [finished, setFinished] = useStorage('lily-finished', [])
   const [yarns, setYarns] = useStorage('lily-yarns', [])
   const [pastYarns, setPastYarns] = useStorage('lily-yarns-past', [])
+  const [patterns, setPatterns] = useStorage('lily-patterns', [])
   const [activeId, setActiveId] = useState(null)
 
   const activeProject = projects.find(p => p.id === activeId)
   const wipProjects = projects.filter(p => p.startedAt)
   const unstartedProjects = projects.filter(p => !p.startedAt)
 
-  function addProject({ name, type, designer, size }) {
+  function addProject({ name, type, designer, size, patternId, startedAt }) {
     const project = {
       id: Date.now().toString(),
       name,
       type: type || '',
       designer: designer || '',
       size: size || '',
+      patternId: patternId || null,
+      startedAt: startedAt || null,
       notes: '',
       createdAt: new Date().toISOString(),
     }
     setProjects([project, ...projects])
+    return project.id
   }
 
   function updateProject(id, updates) {
@@ -118,6 +124,7 @@ export default function App() {
             project={activeProject}
             yarns={yarns}
             yarnActions={yarnActions}
+            bankPatterns={patterns}
             onUpdate={(updates) => updateProject(activeId, updates)}
             onDelete={() => deleteProject(activeId)}
             onFinish={() => finishProject(activeId)}
@@ -134,6 +141,17 @@ export default function App() {
         />
       )
     }
+    if (tab === 'patterns') return (
+      <PatternBank
+        patterns={patterns}
+        setPatterns={setPatterns}
+        projects={projects}
+        onLinkToProject={(patternId, projectId) => updateProject(projectId, { patternId })}
+        onCreateProject={(patternId, projectData) => {
+          addProject({ ...projectData, patternId })
+        }}
+      />
+    )
     if (tab === 'yarn') return (
       <YarnStash
         projects={projects}

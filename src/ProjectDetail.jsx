@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { savePDF, getPDF, deletePDF } from './pdfStorage'
+import { savePDF, getPDF, deletePDF, getBankPattern } from './pdfStorage'
 import YarnForm from './YarnForm'
 
-export default function ProjectDetail({ project, yarns = [], yarnActions, onUpdate, onDelete, onFinish, onBack }) {
+export default function ProjectDetail({ project, yarns = [], yarnActions, bankPatterns = [], onUpdate, onDelete, onFinish, onBack }) {
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState(project.name)
   const [editType, setEditType] = useState(project.type || '')
@@ -11,6 +11,7 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
   const [pdf, setPdf] = useState(null)
   const [pdfUrl, setPdfUrl] = useState(null)
   const [showPdf, setShowPdf] = useState(false)
+  const [pickingPattern, setPickingPattern] = useState(false)
   const [yarnMode, setYarnMode] = useState(null)
   const [newCounterName, setNewCounterName] = useState('')
   const fileRef = useRef()
@@ -33,15 +34,27 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
     setEditing(false)
   }
 
+  const linkedPattern = project.patternId
+    ? bankPatterns.find(p => p.id === project.patternId)
+    : null
+
   useEffect(() => {
-    getPDF(project.id).then(result => {
-      setPdf(result)
-      setShowPdf(false)
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl)
-      setPdfUrl(null)
-    })
+    setShowPdf(false)
+    if (pdfUrl) URL.revokeObjectURL(pdfUrl)
+    setPdfUrl(null)
+    setPickingPattern(false)
+
+    if (project.patternId) {
+      getBankPattern(project.patternId).then(result => {
+        setPdf(result ? { ...result, isLinked: true } : null)
+      })
+    } else {
+      getPDF(project.id).then(result => {
+        setPdf(result)
+      })
+    }
     return () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl) }
-  }, [project.id])
+  }, [project.id, project.patternId])
 
   async function handleFileChange(e) {
     const file = e.target.files[0]
@@ -56,11 +69,23 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
 
   async function handleRemovePdf() {
     if (!confirm('Remove pattern PDF?')) return
-    await deletePDF(project.id)
+    if (project.patternId) {
+      onUpdate({ patternId: null })
+    } else {
+      await deletePDF(project.id)
+    }
     setPdf(null)
     setShowPdf(false)
     if (pdfUrl) URL.revokeObjectURL(pdfUrl)
     setPdfUrl(null)
+  }
+
+  function handleLinkPattern(patternId) {
+    if (pdf && !pdf.isLinked) {
+      deletePDF(project.id)
+    }
+    onUpdate({ patternId })
+    setPickingPattern(false)
   }
 
   function handleViewPdf() {
@@ -209,38 +234,82 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, onUpda
           <div className="pattern-attached">
             <div className="pattern-info">
               <span className="pattern-icon">PDF</span>
-              <span className="pattern-name">{pdf.name}</span>
+              <span className="pattern-name">
+                {linkedPattern ? linkedPattern.fileName : pdf.name}
+              </span>
             </div>
+            {linkedPattern && (
+              <span className="pattern-linked-tag">Linked from Pattern Bank</span>
+            )}
             <div className="pattern-actions">
               <button className="btn btn-primary btn-sm" onClick={handleViewPdf}>
                 {showPdf ? 'Hide' : 'View'}
               </button>
-              <label className="btn btn-ghost btn-sm">
-                Replace
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleFileChange}
-                  hidden
-                />
-              </label>
+              {!pdf.isLinked && (
+                <label className="btn btn-ghost btn-sm">
+                  Replace
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    hidden
+                  />
+                </label>
+              )}
               <button className="btn btn-danger btn-sm" onClick={handleRemovePdf}>
-                Remove
+                {pdf.isLinked ? 'Unlink' : 'Remove'}
               </button>
             </div>
           </div>
         ) : (
-          <label className="btn btn-outline upload-btn">
-            Upload Pattern PDF
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".pdf"
-              onChange={handleFileChange}
-              hidden
-            />
-          </label>
+          <>
+            {pickingPattern ? (
+              <div className="pattern-picker">
+                <p className="picker-title">Choose from Pattern Bank</p>
+                {bankPatterns.length === 0 ? (
+                  <p className="yarn-link-empty">No patterns in bank yet</p>
+                ) : (
+                  <div className="items">
+                    {bankPatterns.map(bp => (
+                      <button
+                        key={bp.id}
+                        className="project-yarn-pick-card"
+                        onClick={() => handleLinkPattern(bp.id)}
+                      >
+                        <div className="pattern-info">
+                          <span className="pattern-icon">PDF</span>
+                          <span className="pattern-name">{bp.fileName}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button className="btn btn-ghost btn-sm" onClick={() => setPickingPattern(false)}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="pattern-link-actions">
+                <label className="btn btn-outline pattern-link-btn">
+                  Upload PDF
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    hidden
+                  />
+                </label>
+                <button
+                  className="btn btn-outline pattern-link-btn"
+                  onClick={() => setPickingPattern(true)}
+                >
+                  Link from Pattern Bank
+                </button>
+              </div>
+            )}
+          </>
         )}
         {showPdf && pdfUrl && (
           <div className="pdf-viewer">

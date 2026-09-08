@@ -11,7 +11,7 @@ export default function ProjectList({ projects, onSelect, onAdd, onDelete }) {
     e.preventDefault()
     const trimmed = name.trim()
     if (!trimmed) return
-    onAdd({ name: trimmed, type: type.trim(), designer: designer.trim(), size: size.trim() })
+    onAdd({ name: trimmed, type: type.trim(), designer: designer.trim(), size: size.trim(), startedAt: new Date().toISOString().split('T')[0] })
     setName('')
     setType('')
     setDesigner('')
