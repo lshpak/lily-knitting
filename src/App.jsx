@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useStorage } from './useStorage'
+import { useAuth } from './AuthProvider'
 import { deletePDF } from './pdfStorage'
 import ProjectList from './ProjectList'
 import ProjectDetail from './ProjectDetail'
@@ -20,13 +20,32 @@ const TABS = [
 ]
 
 export default function App() {
-  const [tab, setTab] = useStorage('lily-tab', 'wips')
-  const [projects, setProjects] = useStorage('lily-projects', [])
-  const [finished, setFinished] = useStorage('lily-finished', [])
-  const [yarns, setYarns] = useStorage('lily-yarns', [])
-  const [pastYarns, setPastYarns] = useStorage('lily-yarns-past', [])
-  const [patterns, setPatterns] = useStorage('lily-patterns', [])
+  const { user, loading, data, updateData, signIn, signOut } = useAuth()
   const [activeId, setActiveId] = useState(null)
+
+  if (loading || !data) {
+    return (
+      <div className="app">
+        <div className="loading-screen">
+          <span className="loading-icon">🧶</span>
+        </div>
+      </div>
+    )
+  }
+
+  const tab = data.tab || 'wips'
+  const projects = data.projects || []
+  const finished = data.finished || []
+  const yarns = data.yarns || []
+  const pastYarns = data.pastYarns || []
+  const patterns = data.patterns || []
+
+  function setTab(t) { updateData('tab', t) }
+  function setProjects(p) { updateData('projects', typeof p === 'function' ? p(projects) : p) }
+  function setFinished(f) { updateData('finished', typeof f === 'function' ? f(finished) : f) }
+  function setYarns(y) { updateData('yarns', typeof y === 'function' ? y(yarns) : y) }
+  function setPastYarns(py) { updateData('pastYarns', typeof py === 'function' ? py(pastYarns) : py) }
+  function setPatterns(p) { updateData('patterns', typeof p === 'function' ? p(patterns) : p) }
 
   const activeProject = projects.find(p => p.id === activeId)
   const wipProjects = projects.filter(p => p.startedAt)
@@ -178,6 +197,15 @@ export default function App() {
         <button className="header-title" onClick={() => switchTab('wips')}>
           Lily Knitting
         </button>
+        {user ? (
+          <button className="btn btn-ghost btn-sm auth-btn" onClick={signOut}>
+            Sign Out
+          </button>
+        ) : (
+          <button className="btn btn-ghost btn-sm auth-btn" onClick={signIn}>
+            Sign In
+          </button>
+        )}
       </header>
       <main className="main">
         {renderContent()}
