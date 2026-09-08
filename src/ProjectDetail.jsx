@@ -9,6 +9,7 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
   const [editType, setEditType] = useState(project.type || '')
   const [editDesigner, setEditDesigner] = useState(project.designer || '')
   const [editSize, setEditSize] = useState(project.size || '')
+  const [editStartedAt, setEditStartedAt] = useState(project.startedAt || '')
   const [pdf, setPdf] = useState(null)
   const [pdfUrl, setPdfUrl] = useState(null)
   const [showPdf, setShowPdf] = useState(false)
@@ -25,13 +26,14 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
     setEditType(project.type || '')
     setEditDesigner(project.designer || '')
     setEditSize(project.size || '')
+    setEditStartedAt(project.startedAt || '')
     setEditing(true)
   }
 
   function saveEdit() {
     const trimmed = editName.trim()
     if (!trimmed) return
-    onUpdate({ name: trimmed, type: editType.trim(), designer: editDesigner.trim(), size: editSize.trim() })
+    onUpdate({ name: trimmed, type: editType.trim(), designer: editDesigner.trim(), size: editSize.trim(), startedAt: editStartedAt || null })
     setEditing(false)
   }
 
@@ -218,6 +220,12 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
             onChange={e => setEditSize(e.target.value)}
             className="input"
             placeholder="Size (S, M, L, 40in chest...)"
+          />
+          <input
+            type="date"
+            value={editStartedAt}
+            onChange={e => setEditStartedAt(e.target.value)}
+            className="input"
           />
           <div className="form-actions">
             <button className="btn btn-primary btn-sm" onClick={saveEdit} disabled={!editName.trim()}>Save</button>
