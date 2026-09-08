@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
-import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth'
+import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import { auth, db, googleProvider } from './firebase'
 
@@ -68,7 +68,6 @@ export function AuthProvider({ children }) {
   const initializedRef = useRef(false)
 
   useEffect(() => {
-    getRedirectResult(auth).catch(() => {})
     return onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser)
       if (!firebaseUser) {
@@ -178,9 +177,7 @@ export function AuthProvider({ children }) {
     try {
       await signInWithPopup(auth, googleProvider)
     } catch (err) {
-      if (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
-        signInWithRedirect(auth, googleProvider)
-      } else if (err.code !== 'auth/popup-closed-by-user') {
+      if (err.code !== 'auth/popup-closed-by-user') {
         alert('Sign in failed: ' + err.message)
       }
     }
