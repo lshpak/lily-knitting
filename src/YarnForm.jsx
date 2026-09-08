@@ -1,9 +1,20 @@
 import { useState } from 'react'
 
-const EMPTY = { brand: '', name: '', colorName: '', weight: '', yards: '', lengthUnit: 'yards', grams: '', weightUnit: 'grams', skeins: '' }
+const EMPTY = { brand: '', name: '', colorName: '', weight: '', yards: '', lengthUnit: 'yards', grams: '', weightUnit: 'grams', skeins: '', boughtAt: '' }
 
-export default function YarnForm({ onSubmit, onCancel }) {
-  const [form, setForm] = useState(EMPTY)
+export default function YarnForm({ onSubmit, onCancel, initial, submitLabel }) {
+  const [form, setForm] = useState(initial ? {
+    brand: initial.brand || '',
+    name: initial.name || '',
+    colorName: initial.colorName || '',
+    weight: initial.weight || '',
+    yards: initial.yardsPerSkein?.toString() || initial.yards?.toString() || '',
+    lengthUnit: initial.lengthUnit || 'yards',
+    grams: initial.grams?.toString() || '',
+    weightUnit: initial.weightUnit || 'grams',
+    skeins: initial.skeins?.toString() || '',
+    boughtAt: initial.boughtAt || '',
+  } : EMPTY)
 
   function set(field) {
     return e => setForm({ ...form, [field]: e.target.value })
@@ -22,9 +33,10 @@ export default function YarnForm({ onSubmit, onCancel }) {
       grams: form.grams.trim(),
       weightUnit: form.weightUnit,
       skeins: parseFloat(form.skeins) || 0,
-      projectId: null,
+      boughtAt: form.boughtAt.trim(),
+      ...(!initial && { projectId: null }),
     })
-    setForm(EMPTY)
+    if (!initial) setForm(EMPTY)
   }
 
   return (
@@ -112,8 +124,15 @@ export default function YarnForm({ onSubmit, onCancel }) {
           +.25
         </button>
       </div>
+      <input
+        type="text"
+        placeholder="Where bought (optional)"
+        value={form.boughtAt}
+        onChange={set('boughtAt')}
+        className="input"
+      />
       <div className="form-actions">
-        <button type="submit" className="btn btn-primary" disabled={!form.brand.trim() && !form.name.trim()}>Add</button>
+        <button type="submit" className="btn btn-primary" disabled={!form.brand.trim() && !form.name.trim()}>{submitLabel || 'Add'}</button>
         <button type="button" className="btn btn-ghost" onClick={onCancel}>Cancel</button>
       </div>
     </form>

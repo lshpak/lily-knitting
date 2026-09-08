@@ -1219,6 +1219,12 @@ body {
   gap: 12px;
 }
 
+.yarn-card-top-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .yarn-card-info {
   flex: 1;
   min-width: 0;

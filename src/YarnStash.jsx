@@ -6,6 +6,7 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
   const [showForm, setShowForm] = useState(false)
   const [linkingId, setLinkingId] = useState(null)
   const [weightFilter, setWeightFilter] = useState(null)
+  const [editingId, setEditingId] = useState(null)
 
   function handleAddYarn(yarnData) {
     addYarn(yarnData)
@@ -100,7 +101,25 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
   const stashYarns = yarns.filter(y => !y.projectId || !getProjectName(y.projectId)).filter(matchesFilter)
   const filteredPast = pastYarns.filter(matchesFilter)
 
+  function handleEditYarn(yarnData, yarnId) {
+    updateYarn(yarnId, yarnData)
+    setEditingId(null)
+  }
+
   function renderYarnCard(yarn, isPast) {
+    if (editingId === yarn.id) {
+      return (
+        <div key={yarn.id} className="yarn-card">
+          <YarnForm
+            initial={yarn}
+            submitLabel="Save"
+            onSubmit={(data) => handleEditYarn(data, yarn.id)}
+            onCancel={() => setEditingId(null)}
+          />
+        </div>
+      )
+    }
+
     const sk = getSkeins(yarn)
     const total = totalYards(yarn)
     const projectName = yarn.projectId ? getProjectName(yarn.projectId) : null
@@ -113,12 +132,18 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
             <h3>{yarn.name}</h3>
             {yarn.colorName && <span className="yarn-color-name">{yarn.colorName}</span>}
           </div>
-          <button className="btn btn-ghost btn-sm delete-btn" onClick={() => handleDeleteYarn(yarn.id, isPast)}>
-            &times;
-          </button>
+          <div className="yarn-card-top-actions">
+            <button className="btn btn-ghost btn-sm" onClick={() => setEditingId(yarn.id)}>Edit</button>
+            <button className="btn btn-ghost btn-sm delete-btn" onClick={() => handleDeleteYarn(yarn.id, isPast)}>
+              &times;
+            </button>
+          </div>
         </div>
         {metaLine(yarn) && (
           <span className="yarn-meta">{metaLine(yarn)}</span>
+        )}
+        {yarn.boughtAt && (
+          <span className="yarn-meta">Bought at {yarn.boughtAt}</span>
         )}
         {!isPast && (
           <>
