@@ -30,7 +30,6 @@ body {
   -webkit-user-select: none;
   user-select: none;
   min-height: 100%;
-  overflow-y: scroll;
 }
 
 .app {
@@ -40,6 +39,7 @@ body {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .header {
@@ -174,10 +174,11 @@ body {
 .global-timer-bar {
   position: fixed;
   bottom: 56px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   width: 100%;
   max-width: 480px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -233,10 +234,11 @@ body {
 .tab-bar {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   width: 100%;
   max-width: 480px;
+  margin: 0 auto;
   display: flex;
   background: var(--warm-white);
   border-top: 1px solid var(--border);
