@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { pickFromDrive, getDrivePreviewUrl } from './googleDrive'
 
 export default function PatternBank({ patterns, setPatterns, projects = [], onLinkToProject, onCreateProject }) {
@@ -11,6 +11,18 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
   const [newDesigner, setNewDesigner] = useState('')
   const [newSize, setNewSize] = useState('')
   const [picking, setPicking] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(null)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(null)
+      }
+    }
+    if (menuOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
 
   async function handleDrivePick() {
     setPicking(true)
@@ -137,19 +149,29 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
                       )}
                     </div>
                   </div>
-                  <div className="bank-card-actions">
+                  <div className="bank-card-actions" ref={menuOpen === p.id ? menuRef : null}>
                     <button
-                      className="btn btn-primary btn-sm"
-                      onClick={() => handleView(p.id)}
+                      className="btn btn-ghost btn-sm dots-btn"
+                      onClick={() => setMenuOpen(menuOpen === p.id ? null : p.id)}
                     >
-                      {viewingId === p.id ? 'Hide' : 'View'}
+                      &#x22EE;
                     </button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDelete(p.id)}
-                    >
-                      Delete
-                    </button>
+                    {menuOpen === p.id && (
+                      <div className="dots-menu">
+                        <button onClick={() => { handleView(p.id); setMenuOpen(null) }}>
+                          {viewingId === p.id ? 'Hide Pattern' : 'View Pattern'}
+                        </button>
+                        <button onClick={() => { handleLinkClick(p.id); setMenuOpen(null) }}>
+                          Link to Project
+                        </button>
+                        <button onClick={() => { handleCreateClick(p.id); setMenuOpen(null) }}>
+                          New Project
+                        </button>
+                        <button className="dots-menu-danger" onClick={() => { handleDelete(p.id); setMenuOpen(null) }}>
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -158,21 +180,6 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
                     <iframe src={pdfUrl} title={p.fileName} />
                   </div>
                 )}
-
-                <div className="bank-link-row">
-                  <button
-                    className={`btn btn-ghost btn-sm ${linkingId === p.id ? 'tab-active' : ''}`}
-                    onClick={() => handleLinkClick(p.id)}
-                  >
-                    Link to Project
-                  </button>
-                  <button
-                    className={`btn btn-ghost btn-sm ${creatingFor === p.id ? 'tab-active' : ''}`}
-                    onClick={() => handleCreateClick(p.id)}
-                  >
-                    New Project
-                  </button>
-                </div>
 
                 {linkingId === p.id && (
                   <div className="bank-picker">
