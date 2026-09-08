@@ -150,6 +150,7 @@ export default function App() {
             onDelete={() => deleteProject(activeId)}
             onFinish={() => finishProject(activeId)}
             onBack={() => setActiveId(null)}
+            onAddPattern={(pattern) => setPatterns([pattern, ...patterns])}
           />
         )
       }

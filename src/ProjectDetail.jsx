@@ -1,22 +1,19 @@
-import { useState, useEffect, useRef } from 'react'
-import { savePDF, getPDF, deletePDF, getBankPattern } from './pdfStorage'
-import { getDrivePreviewUrl } from './googleDrive'
+import { useState, useEffect } from 'react'
+import { getDrivePreviewUrl, pickFromDrive } from './googleDrive'
 import YarnForm from './YarnForm'
 
-export default function ProjectDetail({ project, yarns = [], yarnActions, bankPatterns = [], onUpdate, onDelete, onFinish, onBack }) {
+export default function ProjectDetail({ project, yarns = [], yarnActions, bankPatterns = [], onUpdate, onDelete, onFinish, onBack, onAddPattern }) {
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState(project.name)
   const [editType, setEditType] = useState(project.type || '')
   const [editDesigner, setEditDesigner] = useState(project.designer || '')
   const [editSize, setEditSize] = useState(project.size || '')
   const [editStartedAt, setEditStartedAt] = useState(project.startedAt || '')
-  const [pdf, setPdf] = useState(null)
-  const [pdfUrl, setPdfUrl] = useState(null)
   const [showPdf, setShowPdf] = useState(false)
   const [pickingPattern, setPickingPattern] = useState(false)
+  const [pickingDrive, setPickingDrive] = useState(false)
   const [yarnMode, setYarnMode] = useState(null)
   const [newCounterName, setNewCounterName] = useState('')
-  const fileRef = useRef()
 
   const linkedYarns = yarns.filter(y => y.projectId === project.id)
   const availableYarns = yarns.filter(y => !y.projectId)
@@ -43,72 +40,49 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
 
   useEffect(() => {
     setShowPdf(false)
-    if (pdfUrl) URL.revokeObjectURL(pdfUrl)
-    setPdfUrl(null)
     setPickingPattern(false)
-
-    if (project.patternId) {
-      if (linkedPattern?.source === 'drive') {
-        setPdf({ name: linkedPattern.fileName, isLinked: true, isDrive: true, driveFileId: linkedPattern.driveFileId })
-      } else {
-        getBankPattern(project.patternId).then(result => {
-          setPdf(result ? { ...result, isLinked: true } : null)
-        })
-      }
-    } else {
-      getPDF(project.id).then(result => {
-        setPdf(result)
-      })
-    }
-    return () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl) }
   }, [project.id, project.patternId])
 
-  async function handleFileChange(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    await savePDF(project.id, file)
-    setPdf({ name: file.name, blob: file })
-    setShowPdf(false)
-    if (pdfUrl) URL.revokeObjectURL(pdfUrl)
-    setPdfUrl(null)
-    fileRef.current.value = ''
-  }
-
-  async function handleRemovePdf() {
-    if (!confirm('Remove pattern PDF?')) return
-    if (project.patternId) {
-      onUpdate({ patternId: null })
-    } else {
-      await deletePDF(project.id)
-    }
-    setPdf(null)
-    setShowPdf(false)
-    if (pdfUrl) URL.revokeObjectURL(pdfUrl)
-    setPdfUrl(null)
+  function handleUnlink() {
+    if (!confirm('Remove pattern?')) return
+    onUpdate({ patternId: null })
   }
 
   function handleLinkPattern(patternId) {
-    if (pdf && !pdf.isLinked) {
-      deletePDF(project.id)
-    }
     onUpdate({ patternId })
     setPickingPattern(false)
   }
 
-  function handleViewPdf() {
-    if (showPdf) {
-      setShowPdf(false)
-      return
-    }
-    if (!pdfUrl && pdf) {
-      if (pdf.isDrive) {
-        setPdfUrl(getDrivePreviewUrl(pdf.driveFileId))
+  async function handleDrivePick() {
+    setPickingDrive(true)
+    try {
+      const result = await pickFromDrive()
+      if (!result) return
+      const existing = bankPatterns.find(p => p.driveFileId === result.driveFileId)
+      if (existing) {
+        onUpdate({ patternId: existing.id })
       } else {
-        setPdfUrl(URL.createObjectURL(pdf.blob))
+        const id = Date.now().toString()
+        const newPattern = {
+          id,
+          fileName: result.fileName,
+          addedAt: new Date().toISOString(),
+          source: 'drive',
+          driveFileId: result.driveFileId,
+        }
+        onAddPattern(newPattern)
+        onUpdate({ patternId: id })
       }
+    } catch (err) {
+      alert('Google Drive: ' + err.message)
+    } finally {
+      setPickingDrive(false)
     }
-    setShowPdf(true)
   }
+
+  const pdfUrl = linkedPattern?.driveFileId
+    ? getDrivePreviewUrl(linkedPattern.driveFileId)
+    : null
 
   function handleAddNewYarn(yarnData) {
     yarnActions.addYarn({ ...yarnData, projectId: project.id, skeinsUsed: 0 })
@@ -247,37 +221,18 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
 
       <div className="pattern-section">
         <label className="section-label">Pattern</label>
-        {pdf ? (
+        {linkedPattern ? (
           <div className="pattern-attached">
             <div className="pattern-info">
-              <span className={`pattern-icon ${pdf.isDrive ? 'pattern-icon-drive' : ''}`}>
-                {pdf.isDrive ? 'Drive' : 'PDF'}
-              </span>
-              <span className="pattern-name">
-                {linkedPattern ? linkedPattern.fileName : pdf.name}
-              </span>
+              <span className="pattern-icon pattern-icon-drive">Drive</span>
+              <span className="pattern-name">{linkedPattern.fileName}</span>
             </div>
-            {linkedPattern && (
-              <span className="pattern-linked-tag">Linked from Pattern Bank</span>
-            )}
             <div className="pattern-actions">
-              <button className="btn btn-primary btn-sm" onClick={handleViewPdf}>
+              <button className="btn btn-primary btn-sm" onClick={() => setShowPdf(!showPdf)}>
                 {showPdf ? 'Hide' : 'View'}
               </button>
-              {!pdf.isLinked && (
-                <label className="btn btn-ghost btn-sm">
-                  Replace
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileChange}
-                    hidden
-                  />
-                </label>
-              )}
-              <button className="btn btn-danger btn-sm" onClick={handleRemovePdf}>
-                {pdf.isLinked ? 'Unlink' : 'Remove'}
+              <button className="btn btn-danger btn-sm" onClick={handleUnlink}>
+                Unlink
               </button>
             </div>
           </div>
@@ -297,7 +252,7 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
                         onClick={() => handleLinkPattern(bp.id)}
                       >
                         <div className="pattern-info">
-                          <span className="pattern-icon">PDF</span>
+                          <span className="pattern-icon pattern-icon-drive">Drive</span>
                           <span className="pattern-name">{bp.fileName}</span>
                         </div>
                       </button>
@@ -310,21 +265,18 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
               </div>
             ) : (
               <div className="pattern-link-actions">
-                <label className="btn btn-outline pattern-link-btn">
-                  Upload PDF
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileChange}
-                    hidden
-                  />
-                </label>
+                <button
+                  className="btn btn-outline pattern-link-btn"
+                  onClick={handleDrivePick}
+                  disabled={pickingDrive}
+                >
+                  {pickingDrive ? 'Opening...' : 'Google Drive'}
+                </button>
                 <button
                   className="btn btn-outline pattern-link-btn"
                   onClick={() => setPickingPattern(true)}
                 >
-                  Link from Pattern Bank
+                  Pattern Bank
                 </button>
               </div>
             )}
