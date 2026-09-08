@@ -141,6 +141,88 @@ body {
 }
 
 /* Tab bar */
+.global-timer-fab {
+  position: fixed;
+  bottom: 80px;
+  right: max(16px, calc((100% - 480px) / 2 + 16px));
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--rose);
+  color: white;
+  border: none;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(57, 12, 99, 0.3);
+  cursor: pointer;
+  z-index: 15;
+}
+
+.global-timer-fab:active {
+  transform: scale(0.95);
+}
+
+.global-timer-bar {
+  position: fixed;
+  bottom: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  background: var(--rose-dark);
+  color: white;
+  z-index: 12;
+  border-top: 1px solid var(--rose);
+}
+
+.global-timer-info {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.global-timer-time {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.global-timer-project {
+  font-size: 13px;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.global-timer-controls {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.global-timer-controls .btn {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.global-timer-controls .btn-primary {
+  background: white;
+  color: var(--rose-dark);
+}
+
+.global-timer-controls .btn-danger {
+  background: #c0392b;
+}
+
 .tab-bar {
   position: fixed;
   bottom: 0;

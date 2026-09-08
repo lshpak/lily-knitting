@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from './AuthProvider'
 import { isFirebaseConfigured } from './firebase'
 import { deletePDF } from './pdfStorage'
@@ -57,6 +57,19 @@ export default function App() {
   const { user, loading, error, data, updateData, signIn, signOut } = useAuth()
   const [activeId, setActiveId] = useState(null)
   const [showNewProject, setShowNewProject] = useState(false)
+  const [globalTimer, setGlobalTimer] = useState({ running: false, paused: false, projectId: null, seconds: 0, picking: false, saving: false })
+  const globalIntervalRef = useRef(null)
+
+  useEffect(() => {
+    if (globalTimer.running && !globalTimer.paused) {
+      globalIntervalRef.current = setInterval(() => {
+        setGlobalTimer(t => ({ ...t, seconds: t.seconds + 1 }))
+      }, 1000)
+    } else {
+      clearInterval(globalIntervalRef.current)
+    }
+    return () => clearInterval(globalIntervalRef.current)
+  }, [globalTimer.running, globalTimer.paused])
 
   if (loading || !data) {
     return (
@@ -172,6 +185,41 @@ export default function App() {
 
   const yarnActions = { addYarn, updateYarn, deleteYarn, moveYarnToPast, restoreYarn, deletePastYarn }
 
+  function formatGlobalTime(totalSec) {
+    const h = Math.floor(totalSec / 3600)
+    const m = Math.floor((totalSec % 3600) / 60)
+    const s = totalSec % 60
+    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
+
+  function startGlobalTimer(projectId) {
+    setGlobalTimer({ running: true, paused: false, projectId, seconds: 0, picking: false, saving: false })
+  }
+
+  function stopGlobalTimer() {
+    clearInterval(globalIntervalRef.current)
+    if (globalTimer.seconds > 0) {
+      setGlobalTimer(t => ({ ...t, running: false, paused: false, saving: true }))
+    } else {
+      setGlobalTimer({ running: false, paused: false, projectId: null, seconds: 0, picking: false, saving: false })
+    }
+  }
+
+  function saveGlobalSession() {
+    const proj = projects.find(p => p.id === globalTimer.projectId)
+    if (proj) {
+      updateProject(globalTimer.projectId, { totalSeconds: (proj.totalSeconds || 0) + globalTimer.seconds })
+    }
+    setGlobalTimer({ running: false, paused: false, projectId: null, seconds: 0, picking: false, saving: false })
+  }
+
+  function discardGlobalSession() {
+    setGlobalTimer({ running: false, paused: false, projectId: null, seconds: 0, picking: false, saving: false })
+  }
+
+  const globalTimerProject = globalTimer.projectId ? projects.find(p => p.id === globalTimer.projectId) : null
+
   function renderContent() {
     if (tab === 'wips') {
       if (activeProject) {
@@ -272,6 +320,75 @@ export default function App() {
           onCancel={() => setShowNewProject(false)}
         />
       )}
+      {globalTimer.picking && (
+        <div className="overlay" onClick={() => setGlobalTimer(t => ({ ...t, picking: false }))}>
+          <div className="overlay-form" onClick={e => e.stopPropagation()}>
+            <h2 className="overlay-title">Start Timer</h2>
+            <p className="subtle" style={{ marginBottom: 8 }}>Pick a project to time</p>
+            {wipProjects.length === 0 ? (
+              <p className="yarn-link-empty">No WIPs to time</p>
+            ) : (
+              <div className="items">
+                {wipProjects.map(p => (
+                  <button
+                    key={p.id}
+                    className="project-yarn-pick-card"
+                    onClick={() => startGlobalTimer(p.id)}
+                  >
+                    <div className="project-yarn-info">
+                      {p.type && <span className="project-tag">{p.type}</span>}
+                      <h3>{p.name}</h3>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            <button className="btn btn-ghost btn-sm" style={{ marginTop: 8 }} onClick={() => setGlobalTimer(t => ({ ...t, picking: false }))}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {globalTimer.saving && (
+        <div className="overlay" onClick={() => {}}>
+          <div className="overlay-form" onClick={e => e.stopPropagation()}>
+            <h2 className="overlay-title">Save Session?</h2>
+            <p style={{ margin: '8px 0' }}>
+              {formatGlobalTime(globalTimer.seconds)} for <strong>{globalTimerProject?.name || 'Unknown'}</strong>
+            </p>
+            <div className="form-actions">
+              <button className="btn btn-primary" onClick={saveGlobalSession}>Save</button>
+              <button className="btn btn-ghost" onClick={discardGlobalSession}>Discard</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(globalTimer.running) && (
+        <div className="global-timer-bar">
+          <div className="global-timer-info">
+            <span className="global-timer-time">{formatGlobalTime(globalTimer.seconds)}</span>
+            <span className="global-timer-project">{globalTimerProject?.name || ''}</span>
+          </div>
+          <div className="global-timer-controls">
+            {globalTimer.paused ? (
+              <button className="btn btn-primary btn-sm" onClick={() => setGlobalTimer(t => ({ ...t, paused: false }))}>Resume</button>
+            ) : (
+              <button className="btn btn-ghost btn-sm" onClick={() => setGlobalTimer(t => ({ ...t, paused: true }))}>Pause</button>
+            )}
+            <button className="btn btn-danger btn-sm" onClick={stopGlobalTimer}>Stop</button>
+          </div>
+        </div>
+      )}
+
+      {!globalTimer.running && !globalTimer.saving && !globalTimer.picking && (
+        <button
+          className="global-timer-fab"
+          onClick={() => setGlobalTimer(t => ({ ...t, picking: true }))}
+        >
+          &#9202;
+        </button>
+      )}
+
       <nav className="tab-bar">
         {TABS.map(t => (
           <button
