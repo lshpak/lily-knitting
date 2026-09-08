@@ -1,6 +1,5 @@
-import { useState, useRef } from 'react'
-import { saveBankPattern, getBankPattern, deleteBankPattern } from './pdfStorage'
-import { pickFromDrive, getDrivePreviewUrl, isConfigured as isDriveConfigured } from './googleDrive'
+import { useState } from 'react'
+import { pickFromDrive, getDrivePreviewUrl } from './googleDrive'
 
 export default function PatternBank({ patterns, setPatterns, projects = [], onLinkToProject, onCreateProject }) {
   const [viewingId, setViewingId] = useState(null)
@@ -12,19 +11,6 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
   const [newDesigner, setNewDesigner] = useState('')
   const [newSize, setNewSize] = useState('')
   const [picking, setPicking] = useState(false)
-  const fileRef = useRef()
-
-  async function handleUpload(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    const id = Date.now().toString()
-    await saveBankPattern(id, file)
-    setPatterns([
-      { id, fileName: file.name, addedAt: new Date().toISOString(), source: 'local' },
-      ...patterns,
-    ])
-    fileRef.current.value = ''
-  }
 
   async function handleDrivePick() {
     setPicking(true)
@@ -51,10 +37,6 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
 
   async function handleDelete(id) {
     if (!confirm('Delete this pattern?')) return
-    const pattern = patterns.find(p => p.id === id)
-    if (pattern && pattern.source !== 'drive') {
-      await deleteBankPattern(id)
-    }
     setPatterns(patterns.filter(p => p.id !== id))
     if (viewingId === id) closeViewer()
     if (linkingId === id) setLinkingId(null)
@@ -63,29 +45,19 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
 
   function closeViewer() {
     setViewingId(null)
-    if (pdfUrl) URL.revokeObjectURL(pdfUrl)
     setPdfUrl(null)
   }
 
-  async function handleView(id) {
+  function handleView(id) {
     if (viewingId === id) {
       closeViewer()
       return
     }
-    if (pdfUrl) URL.revokeObjectURL(pdfUrl)
-
     const pattern = patterns.find(p => p.id === id)
-    if (pattern?.source === 'drive') {
+    if (pattern?.driveFileId) {
       setPdfUrl(getDrivePreviewUrl(pattern.driveFileId))
       setViewingId(id)
-      return
     }
-
-    const result = await getBankPattern(id)
-    if (!result) return
-    const url = URL.createObjectURL(result.blob)
-    setPdfUrl(url)
-    setViewingId(id)
   }
 
   function handleLinkClick(patternId) {
@@ -120,41 +92,25 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
     setCreatingFor(null)
   }
 
-  function getUnlinkedProjects(patternId) {
+  function getUnlinkedProjects() {
     return projects.filter(p => !p.patternId && !p.finishedAt)
   }
 
-  const driveReady = isDriveConfigured()
-
   return (
     <div className="section-list">
-      <div className="pattern-add-actions">
-        <label className="btn btn-primary pattern-add-btn">
-          Upload PDF
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".pdf"
-            onChange={handleUpload}
-            hidden
-          />
-        </label>
-        {driveReady && (
-          <button
-            className="btn btn-outline pattern-add-btn"
-            onClick={handleDrivePick}
-            disabled={picking}
-          >
-            {picking ? 'Opening...' : 'Google Drive'}
-          </button>
-        )}
-      </div>
+      <button
+        className="btn btn-primary add-btn"
+        onClick={handleDrivePick}
+        disabled={picking}
+      >
+        {picking ? 'Opening...' : 'Add from Google Drive'}
+      </button>
 
       {patterns.length === 0 && (
         <div className="empty-state">
           <div className="empty-icon">📄</div>
           <p>No patterns yet</p>
-          <p className="subtle">Upload PDF patterns to build your library</p>
+          <p className="subtle">Add patterns from Google Drive to build your library</p>
         </div>
       )}
 
@@ -162,16 +118,13 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
         <div className="items">
           {patterns.map(p => {
             const linkedProjects = projects.filter(pr => pr.patternId === p.id)
-            const available = getUnlinkedProjects(p.id)
-            const isDrive = p.source === 'drive'
+            const available = getUnlinkedProjects()
 
             return (
               <div key={p.id}>
                 <div className="bank-card">
                   <div className="bank-card-left">
-                    <span className={`pattern-icon ${isDrive ? 'pattern-icon-drive' : ''}`}>
-                      {isDrive ? 'Drive' : 'PDF'}
-                    </span>
+                    <span className="pattern-icon pattern-icon-drive">Drive</span>
                     <div className="bank-card-info">
                       <h3>{p.fileName}</h3>
                       <span className="item-card-meta">
