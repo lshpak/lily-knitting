@@ -215,7 +215,14 @@ export default function App() {
         yarnActions={yarnActions}
       />
     )
-    if (tab === 'finished') return <FinishedProjects />
+    if (tab === 'finished') return (
+      <FinishedProjects
+        finished={finished}
+        setFinished={setFinished}
+        bankPatterns={patterns}
+        onAddPattern={(pattern) => setPatterns([pattern, ...patterns])}
+      />
+    )
     if (tab === 'todo') return (
       <TodoList
         unstartedProjects={unstartedProjects}

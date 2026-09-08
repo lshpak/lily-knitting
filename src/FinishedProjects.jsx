@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import { useStorage } from './useStorage'
 import ProjectDetail from './ProjectDetail'
 
-export default function FinishedProjects() {
-  const [finished, setFinished] = useStorage('lily-finished', [])
+export default function FinishedProjects({ finished, setFinished, bankPatterns = [], onAddPattern }) {
   const [activeId, setActiveId] = useState(null)
 
   const activeProject = finished.find(p => p.id === activeId)
@@ -23,9 +21,11 @@ export default function FinishedProjects() {
     return (
       <ProjectDetail
         project={activeProject}
+        bankPatterns={bankPatterns}
         onUpdate={(updates) => updateProject(activeId, updates)}
         onDelete={() => deleteProject(activeId)}
         onBack={() => setActiveId(null)}
+        onAddPattern={onAddPattern}
       />
     )
   }
