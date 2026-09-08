@@ -31,6 +31,14 @@ export default function Stats({ projects = [], finished = [], yarns = [] }) {
   const mostYarnProject = mostYarnEntry ? allProjects.find(p => p.id === mostYarnEntry[0]) : null
   const leastYarnProject = leastYarnEntry ? allProjects.find(p => p.id === leastYarnEntry[0]) : null
 
+  const typeCounts = {}
+  for (const p of finished) {
+    const type = p.type || 'Other'
+    typeCounts[type] = (typeCounts[type] || 0) + 1
+  }
+  const typeBars = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
+  const maxTypeCount = typeBars.length > 0 ? typeBars[0][1] : 0
+
   function formatTotalTime(sec) {
     if (!sec) return '0m'
     const h = Math.floor(sec / 3600)
@@ -117,6 +125,26 @@ export default function Stats({ projects = [], finished = [], yarns = [] }) {
                 <span className="stat-list-meta">{formatSkeins(leastYarnEntry[1])} skeins</span>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {typeBars.length > 0 && (
+        <div className="stat-section">
+          <h3 className="section-label">Finished by Type</h3>
+          <div className="type-chart">
+            {typeBars.map(([type, count]) => (
+              <div key={type} className="type-chart-row">
+                <span className="type-chart-label">{type}</span>
+                <div className="type-chart-bar-track">
+                  <div
+                    className="type-chart-bar-fill"
+                    style={{ width: `${(count / maxTypeCount) * 100}%` }}
+                  />
+                </div>
+                <span className="type-chart-count">{count}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}

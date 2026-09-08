@@ -1242,3 +1242,49 @@ body {
   color: var(--rose);
   margin-top: 2px;
 }
+
+.type-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.type-chart-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.type-chart-label {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 80px;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.type-chart-bar-track {
+  flex: 1;
+  height: 24px;
+  background: var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.type-chart-bar-fill {
+  height: 100%;
+  background: var(--rose);
+  border-radius: 12px;
+  min-width: 24px;
+  transition: width 0.3s ease;
+}
+
+.type-chart-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rose);
+  min-width: 24px;
+  text-align: center;
+}
