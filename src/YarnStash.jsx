@@ -192,7 +192,7 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
 
       {yarns.length === 0 && !showForm && pastYarns.length === 0 && (
         <div className="empty-state">
-          <div className="empty-icon">🧵</div>
+          <div className="empty-icon-text">~</div>
           <p>No yarn yet</p>
           <p className="subtle">Add yarn to keep track of your stash</p>
         </div>

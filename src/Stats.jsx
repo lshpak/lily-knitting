@@ -169,7 +169,7 @@ export default function Stats({ projects = [], finished = [], yarns = [] }) {
 
       {totalProjects === 0 && yarnCount === 0 && (
         <div className="empty-state">
-          <div className="empty-icon">📊</div>
+          <div className="empty-icon-text">—</div>
           <p>No stats yet</p>
           <p className="subtle">Start adding projects and yarn to see your stats</p>
         </div>

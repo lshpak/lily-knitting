@@ -120,7 +120,7 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
 
       {patterns.length === 0 && (
         <div className="empty-state">
-          <div className="empty-icon">📄</div>
+          <div className="empty-icon-text">—</div>
           <p>No patterns yet</p>
           <p className="subtle">Add patterns from Google Drive to build your library</p>
         </div>

@@ -3,7 +3,7 @@ export default function ProjectList({ projects, onSelect, onDelete }) {
     <div className="project-list">
       {projects.length === 0 && (
         <div className="empty-state">
-          <div className="empty-icon">🧶</div>
+          <div className="empty-icon-text">○</div>
           <p>No projects yet</p>
           <p className="subtle">Tap + to start a new project</p>
         </div>

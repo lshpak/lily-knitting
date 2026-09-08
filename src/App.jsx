@@ -9,6 +9,7 @@ import FinishedProjects from './FinishedProjects'
 import Stats from './Stats'
 import TodoList from './TodoList'
 import PatternBank from './PatternBank'
+import { WipsIcon, YarnIcon, PatternsIcon, DoneIcon, TodoIcon, StatsIcon } from './Icons'
 import './styles.css'
 
 function NewProjectForm({ onAdd, onCancel }) {
@@ -44,12 +45,12 @@ function NewProjectForm({ onAdd, onCancel }) {
 }
 
 const TABS = [
-  { id: 'wips', label: 'WIPs', icon: '🧶' },
-  { id: 'yarn', label: 'Yarn', icon: '🧵' },
-  { id: 'patterns', label: 'Patterns', icon: '📄' },
-  { id: 'finished', label: 'Done', icon: '🏆' },
-  { id: 'todo', label: 'To-Do', icon: '📝' },
-  { id: 'stats', label: 'Stats', icon: '📊' },
+  { id: 'wips', label: 'WIPs', Icon: WipsIcon },
+  { id: 'yarn', label: 'Yarn', Icon: YarnIcon },
+  { id: 'patterns', label: 'Patterns', Icon: PatternsIcon },
+  { id: 'finished', label: 'Done', Icon: DoneIcon },
+  { id: 'todo', label: 'To-Do', Icon: TodoIcon },
+  { id: 'stats', label: 'Stats', Icon: StatsIcon },
 ]
 
 export default function App() {
@@ -61,7 +62,7 @@ export default function App() {
     return (
       <div className="app">
         <div className="loading-screen">
-          <span className="loading-icon">🧶</span>
+          <WipsIcon className="loading-icon-svg" />
           {error && <p className="auth-error">{error}</p>}
         </div>
       </div>
@@ -278,7 +279,7 @@ export default function App() {
             className={`tab ${tab === t.id ? 'tab-active' : ''}`}
             onClick={() => switchTab(t.id)}
           >
-            <span className="tab-icon">{t.icon}</span>
+            <t.Icon className="tab-icon-svg" />
             <span className="tab-label">{t.label}</span>
           </button>
         ))}

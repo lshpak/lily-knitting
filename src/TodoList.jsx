@@ -88,7 +88,7 @@ export default function TodoList({ unstartedProjects = [], onAddProject, onStart
 
       {unstartedProjects.length === 0 && !showForm && (
         <div className="empty-state">
-          <div className="empty-icon">📝</div>
+          <div className="empty-icon-text">—</div>
           <p>No upcoming projects</p>
           <p className="subtle">Add a project to plan your next knit</p>
         </div>

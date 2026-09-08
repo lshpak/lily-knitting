@@ -92,8 +92,10 @@ body {
   height: 60vh;
 }
 
-.loading-icon {
-  font-size: 48px;
+.loading-icon-svg {
+  width: 48px;
+  height: 48px;
+  color: var(--rose);
   animation: pulse 1.2s ease-in-out infinite;
 }
 
@@ -184,6 +186,11 @@ body {
 
 .tab-icon {
   font-size: 20px;
+}
+
+.tab-icon-svg {
+  width: 20px;
+  height: 20px;
 }
 
 .tab-label {
@@ -319,6 +326,13 @@ body {
 .empty-icon {
   font-size: 48px;
   margin-bottom: 12px;
+}
+
+.empty-icon-text {
+  font-size: 36px;
+  margin-bottom: 12px;
+  color: var(--border);
+  font-weight: 300;
 }
 
 .subtle {

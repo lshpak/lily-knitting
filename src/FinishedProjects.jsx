@@ -34,7 +34,7 @@ export default function FinishedProjects({ finished, setFinished, bankPatterns =
     <div className="section-list">
       {finished.length === 0 && (
         <div className="empty-state">
-          <div className="empty-icon">🏆</div>
+          <div className="empty-icon-text">✓</div>
           <p>No finished projects</p>
           <p className="subtle">Mark a WIP as finished and it will show up here</p>
         </div>
