@@ -46,10 +46,10 @@ function NewProjectForm({ onAdd, onCancel }) {
 
 const TABS = [
   { id: 'wips', label: 'WIPs', Icon: WipsIcon },
-  { id: 'yarn', label: 'Yarn', Icon: YarnIcon },
-  { id: 'patterns', label: 'Patterns', Icon: PatternsIcon },
-  { id: 'finished', label: 'Done', Icon: DoneIcon },
   { id: 'todo', label: 'To-Do', Icon: TodoIcon },
+  { id: 'finished', label: 'Done', Icon: DoneIcon },
+  { id: 'patterns', label: 'Patterns', Icon: PatternsIcon },
+  { id: 'yarn', label: 'Yarn', Icon: YarnIcon },
   { id: 'stats', label: 'Stats', Icon: StatsIcon },
 ]
 
