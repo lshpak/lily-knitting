@@ -492,6 +492,11 @@ body {
   display: block;
 }
 
+.days-badge {
+  color: var(--rose);
+  font-weight: 600;
+}
+
 .edit-project-form {
   display: flex;
   flex-direction: column;
