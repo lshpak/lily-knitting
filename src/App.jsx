@@ -11,6 +11,36 @@ import TodoList from './TodoList'
 import PatternBank from './PatternBank'
 import './styles.css'
 
+function NewProjectForm({ onAdd, onCancel }) {
+  const [name, setName] = useState('')
+  const [type, setType] = useState('')
+  const [designer, setDesigner] = useState('')
+  const [size, setSize] = useState('')
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    const trimmed = name.trim()
+    if (!trimmed) return
+    onAdd({ name: trimmed, type: type.trim(), designer: designer.trim(), size: size.trim() })
+  }
+
+  return (
+    <div className="overlay" onClick={onCancel}>
+      <form className="overlay-form" onClick={e => e.stopPropagation()} onSubmit={handleSubmit}>
+        <h2 className="overlay-title">New Project</h2>
+        <input autoFocus type="text" placeholder="Project name..." value={name} onChange={e => setName(e.target.value)} className="input" />
+        <input type="text" placeholder="Type (sweater, scarf, hat...)" value={type} onChange={e => setType(e.target.value)} className="input" />
+        <input type="text" placeholder="Pattern designer" value={designer} onChange={e => setDesigner(e.target.value)} className="input" />
+        <input type="text" placeholder="Size (S, M, L, 40in chest...)" value={size} onChange={e => setSize(e.target.value)} className="input" />
+        <div className="form-actions">
+          <button type="submit" className="btn btn-primary" disabled={!name.trim()}>Create</button>
+          <button type="button" className="btn btn-ghost" onClick={onCancel}>Cancel</button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
 const TABS = [
   { id: 'wips', label: 'WIPs', icon: '🧶' },
   { id: 'yarn', label: 'Yarn', icon: '🧵' },
@@ -23,6 +53,7 @@ const TABS = [
 export default function App() {
   const { user, loading, error, data, updateData, signIn, signOut } = useAuth()
   const [activeId, setActiveId] = useState(null)
+  const [showNewProject, setShowNewProject] = useState(false)
 
   if (loading || !data) {
     return (
@@ -158,7 +189,6 @@ export default function App() {
         <ProjectList
           projects={wipProjects}
           onSelect={setActiveId}
-          onAdd={addProject}
           onDelete={deleteProject}
         />
       )
@@ -216,6 +246,17 @@ export default function App() {
       <main className="main">
         {renderContent()}
       </main>
+      {showNewProject && (
+        <NewProjectForm
+          onAdd={(projectData) => {
+            const id = addProject({ ...projectData, startedAt: new Date().toISOString().split('T')[0] })
+            setShowNewProject(false)
+            setTab('wips')
+            setActiveId(id)
+          }}
+          onCancel={() => setShowNewProject(false)}
+        />
+      )}
       <nav className="tab-bar">
         {TABS.map(t => (
           <button
@@ -227,6 +268,10 @@ export default function App() {
             <span className="tab-label">{t.label}</span>
           </button>
         ))}
+        <button className="tab tab-add" onClick={() => setShowNewProject(true)}>
+          <span className="tab-icon">+</span>
+          <span className="tab-label">New</span>
+        </button>
       </nav>
     </div>
   )
