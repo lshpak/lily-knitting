@@ -986,6 +986,42 @@ body {
   border-top: 1px solid var(--border);
 }
 
+.filter-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.filter-chip {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-light);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.filter-chip:hover {
+  border-color: var(--rose-light);
+  color: var(--text);
+}
+
+.filter-chip-active {
+  background: var(--rose);
+  color: white;
+  border-color: var(--rose);
+}
+
+.filter-chip-active:hover {
+  background: var(--rose-light);
+  border-color: var(--rose-light);
+  color: white;
+}
+
 /* Yarn stash */
 .yarn-card {
   display: flex;

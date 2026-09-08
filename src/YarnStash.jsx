@@ -5,6 +5,7 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
   const { addYarn, updateYarn, deleteYarn, moveYarnToPast, restoreYarn, deletePastYarn } = yarnActions
   const [showForm, setShowForm] = useState(false)
   const [linkingId, setLinkingId] = useState(null)
+  const [weightFilter, setWeightFilter] = useState(null)
 
   function handleAddYarn(yarnData) {
     addYarn(yarnData)
@@ -79,8 +80,17 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
     return p ? p.name : null
   }
 
-  const inUseYarns = yarns.filter(y => y.projectId && getProjectName(y.projectId))
-  const stashYarns = yarns.filter(y => !y.projectId || !getProjectName(y.projectId))
+  const allYarns = [...yarns, ...pastYarns]
+  const weights = [...new Set(allYarns.map(y => y.weight).filter(Boolean))].sort()
+
+  function matchesFilter(yarn) {
+    if (!weightFilter) return true
+    return yarn.weight === weightFilter
+  }
+
+  const inUseYarns = yarns.filter(y => y.projectId && getProjectName(y.projectId)).filter(matchesFilter)
+  const stashYarns = yarns.filter(y => !y.projectId || !getProjectName(y.projectId)).filter(matchesFilter)
+  const filteredPast = pastYarns.filter(matchesFilter)
 
   function renderYarnCard(yarn, isPast) {
     const sk = getSkeins(yarn)
@@ -190,6 +200,26 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
         <YarnForm onSubmit={handleAddYarn} onCancel={() => setShowForm(false)} />
       )}
 
+      {weights.length > 1 && (
+        <div className="filter-chips">
+          <button
+            className={`filter-chip ${!weightFilter ? 'filter-chip-active' : ''}`}
+            onClick={() => setWeightFilter(null)}
+          >
+            All
+          </button>
+          {weights.map(w => (
+            <button
+              key={w}
+              className={`filter-chip ${weightFilter === w ? 'filter-chip-active' : ''}`}
+              onClick={() => setWeightFilter(weightFilter === w ? null : w)}
+            >
+              {w}
+            </button>
+          ))}
+        </div>
+      )}
+
       {yarns.length === 0 && !showForm && pastYarns.length === 0 && (
         <div className="empty-state">
           <div className="empty-icon-text">~</div>
@@ -216,11 +246,11 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
         </>
       )}
 
-      {pastYarns.length > 0 && (
+      {filteredPast.length > 0 && (
         <>
-          <p className="completed-label">Past Stash ({pastYarns.length})</p>
+          <p className="completed-label">Past Stash ({filteredPast.length})</p>
           <div className="items">
-            {pastYarns.map(yarn => renderYarnCard(yarn, true))}
+            {filteredPast.map(yarn => renderYarnCard(yarn, true))}
           </div>
         </>
       )}
