@@ -646,6 +646,57 @@ body {
   flex: 1;
 }
 
+/* Timer */
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timer-total {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.timer-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.timer-time {
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--rose);
+}
+
+.timer-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.timer-save-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.timer-session-result {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--rose);
+}
+
 /* Pattern PDF */
 .pattern-section {
   display: flex;

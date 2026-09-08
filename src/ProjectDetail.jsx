@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getDrivePreviewUrl, pickFromDrive } from './googleDrive'
 import YarnForm from './YarnForm'
 
@@ -14,6 +14,77 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
   const [pickingDrive, setPickingDrive] = useState(false)
   const [yarnMode, setYarnMode] = useState(null)
   const [newCounterName, setNewCounterName] = useState('')
+
+  const [timerRunning, setTimerRunning] = useState(false)
+  const [timerPaused, setTimerPaused] = useState(false)
+  const [sessionSeconds, setSessionSeconds] = useState(0)
+  const [showSavePrompt, setShowSavePrompt] = useState(false)
+  const intervalRef = useRef(null)
+
+  useEffect(() => {
+    if (timerRunning && !timerPaused) {
+      intervalRef.current = setInterval(() => {
+        setSessionSeconds(s => s + 1)
+      }, 1000)
+    } else {
+      clearInterval(intervalRef.current)
+    }
+    return () => clearInterval(intervalRef.current)
+  }, [timerRunning, timerPaused])
+
+  function startTimer() {
+    setSessionSeconds(0)
+    setTimerRunning(true)
+    setTimerPaused(false)
+    setShowSavePrompt(false)
+  }
+
+  function pauseTimer() {
+    setTimerPaused(true)
+  }
+
+  function resumeTimer() {
+    setTimerPaused(false)
+  }
+
+  function stopTimer() {
+    setTimerRunning(false)
+    setTimerPaused(false)
+    clearInterval(intervalRef.current)
+    if (sessionSeconds > 0) {
+      setShowSavePrompt(true)
+    }
+  }
+
+  function saveSession() {
+    const totalSeconds = (project.totalSeconds || 0) + sessionSeconds
+    onUpdate({ totalSeconds })
+    setShowSavePrompt(false)
+    setSessionSeconds(0)
+  }
+
+  function discardSession() {
+    setShowSavePrompt(false)
+    setSessionSeconds(0)
+  }
+
+  function formatTime(totalSec) {
+    const h = Math.floor(totalSec / 3600)
+    const m = Math.floor((totalSec % 3600) / 60)
+    const s = totalSec % 60
+    if (h > 0) return `${h}h ${m}m ${s.toString().padStart(2, '0')}s`
+    if (m > 0) return `${m}m ${s.toString().padStart(2, '0')}s`
+    return `${s}s`
+  }
+
+  function formatTotalTime(totalSec) {
+    const h = Math.floor(totalSec / 3600)
+    const m = Math.floor((totalSec % 3600) / 60)
+    if (h > 0 && m > 0) return `${h}h ${m}m`
+    if (h > 0) return `${h}h`
+    if (m > 0) return `${m}m`
+    return '<1m'
+  }
 
   const linkedYarns = yarns.filter(y => y.projectId === project.id)
   const availableYarns = yarns.filter(y => !y.projectId)
@@ -218,6 +289,41 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
           <button className="btn btn-ghost btn-sm" onClick={startEditing}>Edit</button>
         </div>
       )}
+
+      <div className="timer-section">
+        <label className="section-label">
+          Timer
+          {project.totalSeconds > 0 && (
+            <span className="timer-total"> — {formatTotalTime(project.totalSeconds)} total</span>
+          )}
+        </label>
+        {showSavePrompt ? (
+          <div className="timer-save-prompt">
+            <p className="timer-session-result">Session: {formatTime(sessionSeconds)}</p>
+            <p className="picker-title">Save this session?</p>
+            <div className="form-actions">
+              <button className="btn btn-primary btn-sm" onClick={saveSession}>Save</button>
+              <button className="btn btn-ghost btn-sm" onClick={discardSession}>Discard</button>
+            </div>
+          </div>
+        ) : timerRunning ? (
+          <div className="timer-display">
+            <span className="timer-time">{formatTime(sessionSeconds)}</span>
+            <div className="timer-controls">
+              {timerPaused ? (
+                <button className="btn btn-primary btn-sm" onClick={resumeTimer}>Resume</button>
+              ) : (
+                <button className="btn btn-ghost btn-sm" onClick={pauseTimer}>Pause</button>
+              )}
+              <button className="btn btn-danger btn-sm" onClick={stopTimer}>Stop</button>
+            </div>
+          </div>
+        ) : (
+          <button className="btn btn-outline" onClick={startTimer} style={{ width: '100%' }}>
+            Start Timer
+          </button>
+        )}
+      </div>
 
       <div className="pattern-section">
         <label className="section-label">Pattern</label>
