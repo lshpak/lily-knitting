@@ -19,7 +19,7 @@ export default function YarnForm({ onSubmit, onCancel }) {
       weight: form.weight.trim(),
       yardsPerSkein: form.yards.trim(),
       grams: form.grams.trim(),
-      skeins: parseInt(form.skeins, 10) || 0,
+      skeins: parseFloat(form.skeins) || 0,
       projectId: null,
     })
     setForm(EMPTY)
@@ -76,14 +76,22 @@ export default function YarnForm({ onSubmit, onCancel }) {
           style={{ flex: 1 }}
         />
       </div>
-      <input
-        type="text"
-        inputMode="numeric"
-        placeholder="Total skeins"
-        value={form.skeins}
-        onChange={set('skeins')}
-        className="input"
-      />
+      <div className="skeins-input-row">
+        <button type="button" className="btn btn-skein" onClick={() => setForm({ ...form, skeins: String(Math.max(0, (parseFloat(form.skeins) || 0) - 0.25)) })}>
+          -.25
+        </button>
+        <input
+          type="text"
+          inputMode="decimal"
+          placeholder="Total skeins"
+          value={form.skeins}
+          onChange={set('skeins')}
+          className="input skeins-input"
+        />
+        <button type="button" className="btn btn-skein" onClick={() => setForm({ ...form, skeins: String((parseFloat(form.skeins) || 0) + 0.25) })}>
+          +.25
+        </button>
+      </div>
       <div className="form-actions">
         <button type="submit" className="btn btn-primary" disabled={!form.brand.trim() && !form.name.trim()}>Add</button>
         <button type="button" className="btn btn-ghost" onClick={onCancel}>Cancel</button>

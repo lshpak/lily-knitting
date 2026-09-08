@@ -312,6 +312,17 @@ body {
   align-items: center;
 }
 
+.skeins-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skeins-input-row .skeins-input {
+  flex: 1;
+  text-align: center;
+}
+
 .form-actions {
   display: flex;
   gap: 8px;
