@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import { auth, db, googleProvider } from './firebase'
 
 const AuthContext = createContext(null)
@@ -63,12 +63,19 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const saveTimer = useRef(null)
   const dataRef = useRef(null)
+  const unsubSnapshot = useRef(null)
+  const initializedRef = useRef(false)
 
   useEffect(() => {
     getRedirectResult(auth).catch(() => {})
     return onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser)
       if (!firebaseUser) {
+        if (unsubSnapshot.current) {
+          unsubSnapshot.current()
+          unsubSnapshot.current = null
+        }
+        initializedRef.current = false
         setData(readLocal())
         setLoading(false)
       }
@@ -77,8 +84,11 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!user) return
+
     const userDoc = doc(db, 'users', user.uid)
-    getDoc(userDoc).then((snap) => {
+
+    async function initialize() {
+      const snap = await getDoc(userDoc)
       if (snap.exists()) {
         const cloudData = snap.data()
         if (hasLocalData()) {
@@ -99,7 +109,7 @@ export function AuthProvider({ children }) {
             }
             setData(merged)
             writeLocal(merged)
-            setDoc(userDoc, merged, { merge: true })
+            await setDoc(userDoc, merged, { merge: true })
           } else {
             setData(cloudData)
             writeLocal(cloudData)
@@ -111,10 +121,29 @@ export function AuthProvider({ children }) {
       } else {
         const local = readLocal()
         setData(local)
-        setDoc(userDoc, local)
+        await setDoc(userDoc, local)
       }
+
+      initializedRef.current = true
       setLoading(false)
-    })
+
+      unsubSnapshot.current = onSnapshot(userDoc, (snap) => {
+        if (!snap.exists() || !initializedRef.current) return
+        if (snap.metadata.hasPendingWrites) return
+        const cloudData = snap.data()
+        setData(cloudData)
+        writeLocal(cloudData)
+      })
+    }
+
+    initialize()
+
+    return () => {
+      if (unsubSnapshot.current) {
+        unsubSnapshot.current()
+        unsubSnapshot.current = null
+      }
+    }
   }, [user])
 
   dataRef.current = data
