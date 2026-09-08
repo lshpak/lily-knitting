@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { savePDF, getPDF, deletePDF, getBankPattern } from './pdfStorage'
+import { getDrivePreviewUrl } from './googleDrive'
 import YarnForm from './YarnForm'
 
 export default function ProjectDetail({ project, yarns = [], yarnActions, bankPatterns = [], onUpdate, onDelete, onFinish, onBack }) {
@@ -45,9 +46,13 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
     setPickingPattern(false)
 
     if (project.patternId) {
-      getBankPattern(project.patternId).then(result => {
-        setPdf(result ? { ...result, isLinked: true } : null)
-      })
+      if (linkedPattern?.source === 'drive') {
+        setPdf({ name: linkedPattern.fileName, isLinked: true, isDrive: true, driveFileId: linkedPattern.driveFileId })
+      } else {
+        getBankPattern(project.patternId).then(result => {
+          setPdf(result ? { ...result, isLinked: true } : null)
+        })
+      }
     } else {
       getPDF(project.id).then(result => {
         setPdf(result)
@@ -94,7 +99,11 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
       return
     }
     if (!pdfUrl && pdf) {
-      setPdfUrl(URL.createObjectURL(pdf.blob))
+      if (pdf.isDrive) {
+        setPdfUrl(getDrivePreviewUrl(pdf.driveFileId))
+      } else {
+        setPdfUrl(URL.createObjectURL(pdf.blob))
+      }
     }
     setShowPdf(true)
   }
@@ -233,7 +242,9 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
         {pdf ? (
           <div className="pattern-attached">
             <div className="pattern-info">
-              <span className="pattern-icon">PDF</span>
+              <span className={`pattern-icon ${pdf.isDrive ? 'pattern-icon-drive' : ''}`}>
+                {pdf.isDrive ? 'Drive' : 'PDF'}
+              </span>
               <span className="pattern-name">
                 {linkedPattern ? linkedPattern.fileName : pdf.name}
               </span>

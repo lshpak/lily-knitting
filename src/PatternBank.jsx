@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { saveBankPattern, getBankPattern, deleteBankPattern } from './pdfStorage'
+import { pickFromDrive, getDrivePreviewUrl, isConfigured as isDriveConfigured } from './googleDrive'
 
 export default function PatternBank({ patterns, setPatterns, projects = [], onLinkToProject, onCreateProject }) {
   const [viewingId, setViewingId] = useState(null)
@@ -10,6 +11,7 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
   const [newType, setNewType] = useState('')
   const [newDesigner, setNewDesigner] = useState('')
   const [newSize, setNewSize] = useState('')
+  const [picking, setPicking] = useState(false)
   const fileRef = useRef()
 
   async function handleUpload(e) {
@@ -18,15 +20,41 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
     const id = Date.now().toString()
     await saveBankPattern(id, file)
     setPatterns([
-      { id, fileName: file.name, addedAt: new Date().toISOString() },
+      { id, fileName: file.name, addedAt: new Date().toISOString(), source: 'local' },
       ...patterns,
     ])
     fileRef.current.value = ''
   }
 
+  async function handleDrivePick() {
+    setPicking(true)
+    try {
+      const result = await pickFromDrive()
+      if (!result) return
+      const id = Date.now().toString()
+      setPatterns([
+        {
+          id,
+          fileName: result.fileName,
+          addedAt: new Date().toISOString(),
+          source: 'drive',
+          driveFileId: result.driveFileId,
+        },
+        ...patterns,
+      ])
+    } catch (err) {
+      alert('Google Drive: ' + err.message)
+    } finally {
+      setPicking(false)
+    }
+  }
+
   async function handleDelete(id) {
     if (!confirm('Delete this pattern?')) return
-    await deleteBankPattern(id)
+    const pattern = patterns.find(p => p.id === id)
+    if (pattern && pattern.source !== 'drive') {
+      await deleteBankPattern(id)
+    }
     setPatterns(patterns.filter(p => p.id !== id))
     if (viewingId === id) closeViewer()
     if (linkingId === id) setLinkingId(null)
@@ -45,6 +73,14 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
       return
     }
     if (pdfUrl) URL.revokeObjectURL(pdfUrl)
+
+    const pattern = patterns.find(p => p.id === id)
+    if (pattern?.source === 'drive') {
+      setPdfUrl(getDrivePreviewUrl(pattern.driveFileId))
+      setViewingId(id)
+      return
+    }
+
     const result = await getBankPattern(id)
     if (!result) return
     const url = URL.createObjectURL(result.blob)
@@ -88,18 +124,31 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
     return projects.filter(p => !p.patternId && !p.finishedAt)
   }
 
+  const driveReady = isDriveConfigured()
+
   return (
     <div className="section-list">
-      <label className="btn btn-primary add-btn">
-        Upload Pattern PDF
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".pdf"
-          onChange={handleUpload}
-          hidden
-        />
-      </label>
+      <div className="pattern-add-actions">
+        <label className="btn btn-primary pattern-add-btn">
+          Upload PDF
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf"
+            onChange={handleUpload}
+            hidden
+          />
+        </label>
+        {driveReady && (
+          <button
+            className="btn btn-outline pattern-add-btn"
+            onClick={handleDrivePick}
+            disabled={picking}
+          >
+            {picking ? 'Opening...' : 'Google Drive'}
+          </button>
+        )}
+      </div>
 
       {patterns.length === 0 && (
         <div className="empty-state">
@@ -114,12 +163,15 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
           {patterns.map(p => {
             const linkedProjects = projects.filter(pr => pr.patternId === p.id)
             const available = getUnlinkedProjects(p.id)
+            const isDrive = p.source === 'drive'
 
             return (
               <div key={p.id}>
                 <div className="bank-card">
                   <div className="bank-card-left">
-                    <span className="pattern-icon">PDF</span>
+                    <span className={`pattern-icon ${isDrive ? 'pattern-icon-drive' : ''}`}>
+                      {isDrive ? 'Drive' : 'PDF'}
+                    </span>
                     <div className="bank-card-info">
                       <h3>{p.fileName}</h3>
                       <span className="item-card-meta">

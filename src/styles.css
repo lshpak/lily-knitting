@@ -629,6 +629,19 @@ body {
   width: 100%;
 }
 
+.pattern-add-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pattern-add-btn {
+  flex: 1;
+}
+
+.pattern-icon-drive {
+  background: #4285f4;
+}
+
 .pattern-link-actions {
   display: flex;
   gap: 8px;
