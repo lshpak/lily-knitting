@@ -175,9 +175,8 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
 
             return (
               <div key={p.id}>
-                <div className="bank-card">
+                <div className="bank-card" onClick={() => handleView(p.id)}>
                   <div className="bank-card-left">
-                    <span className="pattern-icon pattern-icon-drive">Drive</span>
                     <div className="bank-card-info">
                       <h3>{p.fileName}</h3>
                       <span className="item-card-meta">
@@ -191,7 +190,7 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
                       )}
                     </div>
                   </div>
-                  <div className="bank-card-actions" ref={menuOpen === p.id ? menuRef : null}>
+                  <div className="bank-card-actions" ref={menuOpen === p.id ? menuRef : null} onClick={e => e.stopPropagation()}>
                     <button
                       className="btn btn-ghost btn-sm dots-btn"
                       onClick={() => setMenuOpen(menuOpen === p.id ? null : p.id)}
@@ -200,9 +199,6 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
                     </button>
                     {menuOpen === p.id && (
                       <div className="dots-menu">
-                        <button onClick={() => { handleView(p.id); setMenuOpen(null) }}>
-                          {viewingId === p.id ? 'Hide Pattern' : 'View Pattern'}
-                        </button>
                         <button onClick={() => { handleLinkClick(p.id); setMenuOpen(null) }}>
                           Link to Project
                         </button>

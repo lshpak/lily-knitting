@@ -942,6 +942,7 @@ body {
   background: var(--warm-white);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  cursor: pointer;
 }
 
 .bank-card-left {

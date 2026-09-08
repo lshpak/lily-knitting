@@ -337,7 +337,6 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
         {linkedPattern ? (
           <div className="pattern-attached">
             <div className="pattern-info">
-              <span className="pattern-icon pattern-icon-drive">Drive</span>
               <span className="pattern-name">{linkedPattern.fileName}</span>
             </div>
             <div className="pattern-actions">
@@ -365,7 +364,6 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
                         onClick={() => handleLinkPattern(bp.id)}
                       >
                         <div className="pattern-info">
-                          <span className="pattern-icon pattern-icon-drive">Drive</span>
                           <span className="pattern-name">{bp.fileName}</span>
                         </div>
                       </button>
