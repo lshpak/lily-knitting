@@ -14,6 +14,7 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
   const [pickingDrive, setPickingDrive] = useState(false)
   const [yarnMode, setYarnMode] = useState(null)
   const [newCounterName, setNewCounterName] = useState('')
+  const [newNote, setNewNote] = useState('')
 
   const [timerRunning, setTimerRunning] = useState(false)
   const [timerPaused, setTimerPaused] = useState(false)
@@ -450,13 +451,51 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
 
       <div className="notes-section">
         <label className="section-label">Notes</label>
-        <textarea
-          className="notes-input"
-          placeholder="Pattern notes, stitch counts, reminders..."
-          value={project.notes}
-          onChange={e => onUpdate({ notes: e.target.value })}
-          rows={6}
-        />
+        {project.notes && !project.notesList?.length && (
+          <div className="notes-legacy">
+            <p className="notes-legacy-text">{project.notes}</p>
+          </div>
+        )}
+        {(project.notesList || []).length > 0 && (
+          <div className="notes-list">
+            {(project.notesList || []).map(note => (
+              <div key={note.id} className="note-card">
+                <div className="note-content">
+                  <p>{note.text}</p>
+                  <span className="note-date">{new Date(note.addedAt).toLocaleDateString()}</span>
+                </div>
+                <button
+                  className="btn btn-ghost btn-sm delete-btn"
+                  onClick={() => onUpdate({ notesList: (project.notesList || []).filter(n => n.id !== note.id) })}
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <form
+          className="note-form"
+          onSubmit={e => {
+            e.preventDefault()
+            const text = newNote.trim()
+            if (!text) return
+            const note = { id: Date.now().toString(), text, addedAt: new Date().toISOString() }
+            onUpdate({ notesList: [note, ...(project.notesList || [])] })
+            setNewNote('')
+          }}
+        >
+          <textarea
+            className="notes-input"
+            placeholder="Add a note..."
+            value={newNote}
+            onChange={e => setNewNote(e.target.value)}
+            rows={3}
+          />
+          <button type="submit" className="btn btn-primary btn-sm" disabled={!newNote.trim()}>
+            Add Note
+          </button>
+        </form>
       </div>
 
       {yarnActions && <div className="project-yarn-section">
