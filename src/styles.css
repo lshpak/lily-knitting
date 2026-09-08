@@ -931,6 +931,20 @@ body {
   margin-top: 2px;
 }
 
+.bank-weight-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--cream);
+  border-radius: var(--radius);
+}
+
+.bank-weight-edit .input {
+  flex: 1;
+}
+
 .bank-picker {
   margin-top: 6px;
 }

@@ -12,6 +12,9 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
   const [newSize, setNewSize] = useState('')
   const [picking, setPicking] = useState(false)
   const [menuOpen, setMenuOpen] = useState(null)
+  const [editingWeightId, setEditingWeightId] = useState(null)
+  const [weightInput, setWeightInput] = useState('')
+  const [weightFilter, setWeightFilter] = useState(null)
   const menuRef = useRef(null)
 
   useEffect(() => {
@@ -108,6 +111,24 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
     return projects.filter(p => !p.patternId && !p.finishedAt)
   }
 
+  function handleEditWeight(id) {
+    const pattern = patterns.find(p => p.id === id)
+    setWeightInput(pattern?.yarnWeight || '')
+    setEditingWeightId(id)
+    setMenuOpen(null)
+  }
+
+  function saveWeight(id) {
+    setPatterns(patterns.map(p => p.id === id ? { ...p, yarnWeight: weightInput.trim() || null } : p))
+    setEditingWeightId(null)
+    setWeightInput('')
+  }
+
+  const weights = [...new Set(patterns.map(p => p.yarnWeight).filter(Boolean))].sort()
+  const filteredPatterns = weightFilter
+    ? patterns.filter(p => p.yarnWeight === weightFilter)
+    : patterns
+
   return (
     <div className="section-list">
       <button
@@ -118,6 +139,26 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
         {picking ? 'Opening...' : 'Add from Google Drive'}
       </button>
 
+      {weights.length > 1 && (
+        <div className="filter-chips">
+          <button
+            className={`filter-chip ${!weightFilter ? 'filter-chip-active' : ''}`}
+            onClick={() => setWeightFilter(null)}
+          >
+            All
+          </button>
+          {weights.map(w => (
+            <button
+              key={w}
+              className={`filter-chip ${weightFilter === w ? 'filter-chip-active' : ''}`}
+              onClick={() => setWeightFilter(weightFilter === w ? null : w)}
+            >
+              {w}
+            </button>
+          ))}
+        </div>
+      )}
+
       {patterns.length === 0 && (
         <div className="empty-state">
           <div className="empty-icon-text">—</div>
@@ -126,9 +167,9 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
         </div>
       )}
 
-      {patterns.length > 0 && (
+      {filteredPatterns.length > 0 && (
         <div className="items">
-          {patterns.map(p => {
+          {filteredPatterns.map(p => {
             const linkedProjects = projects.filter(pr => pr.patternId === p.id)
             const available = getUnlinkedProjects()
 
@@ -141,6 +182,7 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
                       <h3>{p.fileName}</h3>
                       <span className="item-card-meta">
                         {new Date(p.addedAt).toLocaleDateString()}
+                        {p.yarnWeight && <> · {p.yarnWeight}</>}
                       </span>
                       {linkedProjects.length > 0 && (
                         <span className="bank-linked-projects">
@@ -167,6 +209,9 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
                         <button onClick={() => { handleCreateClick(p.id); setMenuOpen(null) }}>
                           New Project
                         </button>
+                        <button onClick={() => handleEditWeight(p.id)}>
+                          {p.yarnWeight ? 'Edit Yarn Weight' : 'Set Yarn Weight'}
+                        </button>
                         <button className="dots-menu-danger" onClick={() => { handleDelete(p.id); setMenuOpen(null) }}>
                           Delete
                         </button>
@@ -178,6 +223,22 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
                 {viewingId === p.id && pdfUrl && (
                   <div className="pdf-viewer bank-pdf-viewer">
                     <iframe src={pdfUrl} title={p.fileName} />
+                  </div>
+                )}
+
+                {editingWeightId === p.id && (
+                  <div className="bank-weight-edit">
+                    <input
+                      autoFocus
+                      type="text"
+                      className="input input-sm"
+                      placeholder="Yarn weight (DK, Worsted, Bulky...)"
+                      value={weightInput}
+                      onChange={e => setWeightInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') saveWeight(p.id) }}
+                    />
+                    <button className="btn btn-primary btn-sm" onClick={() => saveWeight(p.id)}>Save</button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setEditingWeightId(null)}>Cancel</button>
                   </div>
                 )}
 
