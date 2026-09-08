@@ -5,17 +5,17 @@
 }
 
 :root {
-  --rose: #b56576;
-  --rose-light: #e8c1c8;
-  --rose-dark: #8b4a5a;
-  --cream: #faf5f0;
-  --warm-white: #fff9f5;
-  --text: #3d2c2e;
-  --text-light: #8a7275;
-  --border: #e8ddd5;
-  --shadow: 0 2px 8px rgba(61, 44, 46, 0.08);
+  --rose: #b99fd1;
+  --rose-light: #dccfe8;
+  --rose-dark: #8a74a8;
+  --cream: #f0f5f3;
+  --warm-white: #f7faf9;
+  --text: #2e3d35;
+  --text-light: #72867a;
+  --border: #d5e3dc;
+  --shadow: 0 2px 8px rgba(44, 61, 52, 0.08);
   --radius: 12px;
-  --green: #6a9a5b;
+  --green: #cae6e0;
 }
 
 body {
@@ -245,7 +245,7 @@ body {
 
 .btn-finish {
   background: var(--green);
-  color: white;
+  color: var(--text);
   padding: 12px 24px;
   font-weight: 600;
   width: 100%;
@@ -1179,7 +1179,7 @@ body {
 
 .stat-bar-fill {
   height: 100%;
-  background: var(--green);
+  background: var(--rose);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
