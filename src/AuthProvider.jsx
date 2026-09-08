@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore'
-import { auth, db, googleProvider } from './firebase'
+import { auth, db, googleProvider, isFirebaseConfigured } from './firebase'
 
 const AuthContext = createContext(null)
 
@@ -68,6 +68,13 @@ export function AuthProvider({ children }) {
   const initializedRef = useRef(false)
 
   useEffect(() => {
+    if (!isFirebaseConfigured || !auth) {
+      setUser(null)
+      setData(readLocal())
+      setLoading(false)
+      return
+    }
+
     return onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser)
       if (!firebaseUser) {
@@ -83,7 +90,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   useEffect(() => {
-    if (!user) return
+    if (!user || !db) return
 
     const userDoc = doc(db, 'users', user.uid)
 
@@ -162,7 +169,7 @@ export function AuthProvider({ children }) {
       return next
     })
 
-    if (user) {
+    if (user && db) {
       if (saveTimer.current) clearTimeout(saveTimer.current)
       saveTimer.current = setTimeout(() => {
         const current = dataRef.current
@@ -174,6 +181,7 @@ export function AuthProvider({ children }) {
   }, [user])
 
   async function handleSignIn() {
+    if (!auth) return
     try {
       await signInWithPopup(auth, googleProvider)
     } catch (err) {
@@ -184,6 +192,7 @@ export function AuthProvider({ children }) {
   }
 
   async function handleSignOut() {
+    if (!auth) return
     await signOut(auth)
     setData(readLocal())
   }

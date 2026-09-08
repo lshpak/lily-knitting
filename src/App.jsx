@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from './AuthProvider'
+import { isFirebaseConfigured } from './firebase'
 import { deletePDF } from './pdfStorage'
 import ProjectList from './ProjectList'
 import ProjectDetail from './ProjectDetail'
@@ -200,7 +201,7 @@ export default function App() {
         </button>
         <div className="auth-area">
           {error && <span className="auth-error-badge">Sync error</span>}
-          {user ? (
+          {isFirebaseConfigured && (user ? (
             <button className="btn btn-ghost btn-sm auth-btn" onClick={signOut}>
               Sign Out
             </button>
@@ -208,7 +209,7 @@ export default function App() {
             <button className="btn btn-ghost btn-sm auth-btn" onClick={signIn}>
               Sign In
             </button>
-          )}
+          ))}
         </div>
       </header>
       <main className="main">
