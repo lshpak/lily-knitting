@@ -59,9 +59,30 @@ body {
   font-family: inherit;
 }
 
+.auth-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .auth-btn {
   font-size: 12px;
   color: var(--text-light);
+}
+
+.auth-error {
+  font-size: 13px;
+  color: #c44;
+  text-align: center;
+  margin-top: 12px;
+  max-width: 280px;
+  word-break: break-word;
+}
+
+.auth-error-badge {
+  font-size: 11px;
+  color: #c44;
+  font-weight: 600;
 }
 
 .loading-screen {

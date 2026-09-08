@@ -20,7 +20,7 @@ const TABS = [
 ]
 
 export default function App() {
-  const { user, loading, data, updateData, signIn, signOut } = useAuth()
+  const { user, loading, error, data, updateData, signIn, signOut } = useAuth()
   const [activeId, setActiveId] = useState(null)
 
   if (loading || !data) {
@@ -28,6 +28,7 @@ export default function App() {
       <div className="app">
         <div className="loading-screen">
           <span className="loading-icon">🧶</span>
+          {error && <p className="auth-error">{error}</p>}
         </div>
       </div>
     )
@@ -197,15 +198,18 @@ export default function App() {
         <button className="header-title" onClick={() => switchTab('wips')}>
           Lily Knitting
         </button>
-        {user ? (
-          <button className="btn btn-ghost btn-sm auth-btn" onClick={signOut}>
-            Sign Out
-          </button>
-        ) : (
-          <button className="btn btn-ghost btn-sm auth-btn" onClick={signIn}>
-            Sign In
-          </button>
-        )}
+        <div className="auth-area">
+          {error && <span className="auth-error-badge">Sync error</span>}
+          {user ? (
+            <button className="btn btn-ghost btn-sm auth-btn" onClick={signOut}>
+              Sign Out
+            </button>
+          ) : (
+            <button className="btn btn-ghost btn-sm auth-btn" onClick={signIn}>
+              Sign In
+            </button>
+          )}
+        </div>
       </header>
       <main className="main">
         {renderContent()}

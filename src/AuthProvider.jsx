@@ -61,6 +61,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(undefined)
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const saveTimer = useRef(null)
   const dataRef = useRef(null)
   const unsubSnapshot = useRef(null)
@@ -88,52 +89,59 @@ export function AuthProvider({ children }) {
     const userDoc = doc(db, 'users', user.uid)
 
     async function initialize() {
-      const snap = await getDoc(userDoc)
-      if (snap.exists()) {
-        const cloudData = snap.data()
-        if (hasLocalData()) {
-          const local = readLocal()
-          const localHasMore = Object.keys(DEFAULTS).some(k =>
-            Array.isArray(local[k]) && local[k].length > (cloudData[k]?.length || 0)
-          )
-          if (localHasMore) {
-            const merged = {}
-            for (const k of Object.keys(DEFAULTS)) {
-              if (Array.isArray(DEFAULTS[k])) {
-                const cloudIds = new Set((cloudData[k] || []).map(i => i.id))
-                const extras = (local[k] || []).filter(i => !cloudIds.has(i.id))
-                merged[k] = [...(cloudData[k] || []), ...extras]
-              } else {
-                merged[k] = cloudData[k] ?? local[k]
+      try {
+        const snap = await getDoc(userDoc)
+        if (snap.exists()) {
+          const cloudData = snap.data()
+          if (hasLocalData()) {
+            const local = readLocal()
+            const localHasMore = Object.keys(DEFAULTS).some(k =>
+              Array.isArray(local[k]) && local[k].length > (cloudData[k]?.length || 0)
+            )
+            if (localHasMore) {
+              const merged = {}
+              for (const k of Object.keys(DEFAULTS)) {
+                if (Array.isArray(DEFAULTS[k])) {
+                  const cloudIds = new Set((cloudData[k] || []).map(i => i.id))
+                  const extras = (local[k] || []).filter(i => !cloudIds.has(i.id))
+                  merged[k] = [...(cloudData[k] || []), ...extras]
+                } else {
+                  merged[k] = cloudData[k] ?? local[k]
+                }
               }
+              setData(merged)
+              writeLocal(merged)
+              await setDoc(userDoc, merged, { merge: true })
+            } else {
+              setData(cloudData)
+              writeLocal(cloudData)
             }
-            setData(merged)
-            writeLocal(merged)
-            await setDoc(userDoc, merged, { merge: true })
           } else {
             setData(cloudData)
             writeLocal(cloudData)
           }
         } else {
+          const local = readLocal()
+          setData(local)
+          await setDoc(userDoc, local)
+        }
+
+        initializedRef.current = true
+        setLoading(false)
+
+        unsubSnapshot.current = onSnapshot(userDoc, (snap) => {
+          if (!snap.exists() || !initializedRef.current) return
+          if (snap.metadata.hasPendingWrites) return
+          const cloudData = snap.data()
           setData(cloudData)
           writeLocal(cloudData)
-        }
-      } else {
-        const local = readLocal()
-        setData(local)
-        await setDoc(userDoc, local)
+        })
+      } catch (err) {
+        console.error('Firestore init failed:', err)
+        setError(err.message)
+        setData(readLocal())
+        setLoading(false)
       }
-
-      initializedRef.current = true
-      setLoading(false)
-
-      unsubSnapshot.current = onSnapshot(userDoc, (snap) => {
-        if (!snap.exists() || !initializedRef.current) return
-        if (snap.metadata.hasPendingWrites) return
-        const cloudData = snap.data()
-        setData(cloudData)
-        writeLocal(cloudData)
-      })
     }
 
     initialize()
@@ -186,6 +194,7 @@ export function AuthProvider({ children }) {
   const value = {
     user: user ?? null,
     loading,
+    error,
     data,
     updateData,
     signIn: handleSignIn,
