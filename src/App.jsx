@@ -16,12 +16,13 @@ function NewProjectForm({ onAdd, onCancel }) {
   const [type, setType] = useState('')
   const [designer, setDesigner] = useState('')
   const [size, setSize] = useState('')
+  const [startedAt, setStartedAt] = useState('')
 
   function handleSubmit(e) {
     e.preventDefault()
     const trimmed = name.trim()
     if (!trimmed) return
-    onAdd({ name: trimmed, type: type.trim(), designer: designer.trim(), size: size.trim() })
+    onAdd({ name: trimmed, type: type.trim(), designer: designer.trim(), size: size.trim(), startedAt: startedAt || null })
   }
 
   return (
@@ -32,6 +33,7 @@ function NewProjectForm({ onAdd, onCancel }) {
         <input type="text" placeholder="Type (sweater, scarf, hat...)" value={type} onChange={e => setType(e.target.value)} className="input" />
         <input type="text" placeholder="Pattern designer" value={designer} onChange={e => setDesigner(e.target.value)} className="input" />
         <input type="text" placeholder="Size (S, M, L, 40in chest...)" value={size} onChange={e => setSize(e.target.value)} className="input" />
+        <input type="date" value={startedAt} onChange={e => setStartedAt(e.target.value)} className="input" placeholder="Start date (optional)" />
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={!name.trim()}>Create</button>
           <button type="button" className="btn btn-ghost" onClick={onCancel}>Cancel</button>
@@ -80,9 +82,10 @@ export default function App() {
   function setPastYarns(py) { updateData('pastYarns', typeof py === 'function' ? py(pastYarns) : py) }
   function setPatterns(p) { updateData('patterns', typeof p === 'function' ? p(patterns) : p) }
 
+  const today = new Date().toISOString().split('T')[0]
   const activeProject = projects.find(p => p.id === activeId)
-  const wipProjects = projects.filter(p => p.startedAt)
-  const unstartedProjects = projects.filter(p => !p.startedAt)
+  const wipProjects = projects.filter(p => p.startedAt && p.startedAt <= today)
+  const unstartedProjects = projects.filter(p => !p.startedAt || p.startedAt > today)
 
   function addProject({ name, type, designer, size, patternId, startedAt }) {
     const project = {
@@ -249,10 +252,14 @@ export default function App() {
       {showNewProject && (
         <NewProjectForm
           onAdd={(projectData) => {
-            const id = addProject({ ...projectData, startedAt: new Date().toISOString().split('T')[0] })
+            const id = addProject(projectData)
             setShowNewProject(false)
-            setTab('wips')
-            setActiveId(id)
+            if (projectData.startedAt && projectData.startedAt <= today) {
+              setTab('wips')
+              setActiveId(id)
+            } else {
+              setTab('todo')
+            }
           }}
           onCancel={() => setShowNewProject(false)}
         />
