@@ -224,7 +224,7 @@ export default function App() {
         onDeleteProject={deleteProject}
       />
     )
-    if (tab === 'stats') return <Stats />
+    if (tab === 'stats') return <Stats projects={projects} finished={finished} yarns={yarns} />
   }
 
   return (

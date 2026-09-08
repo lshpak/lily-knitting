@@ -1183,3 +1183,62 @@ body {
   font-size: 13px;
   color: var(--text-light);
 }
+
+.stat-highlight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.stat-highlight-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--rose);
+  line-height: 1;
+}
+
+.stat-highlight-label {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-top: 6px;
+}
+
+.stat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-list-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.stat-list-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-list-value {
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.stat-list-meta {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rose);
+  margin-top: 2px;
+}

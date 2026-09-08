@@ -1,17 +1,49 @@
-import { useStorage } from './useStorage'
-
-export default function Stats() {
-  const [projects] = useStorage('lily-projects', [])
-  const [finished] = useStorage('lily-finished', [])
-  const [yarns] = useStorage('lily-yarns', [])
-  const [todos] = useStorage('lily-todos', [])
-
+export default function Stats({ projects = [], finished = [], yarns = [] }) {
+  const allProjects = [...projects, ...finished]
   const wipCount = projects.length
   const finishedCount = finished.length
-  const totalProjects = wipCount + finishedCount
+  const totalProjects = allProjects.length
   const yarnCount = yarns.length
-  const todoDone = todos.filter(t => t.done).length
-  const todoTotal = todos.length
+
+  const totalSeconds = allProjects.reduce((sum, p) => sum + (p.totalSeconds || 0), 0)
+
+  const projectsWithTime = allProjects.filter(p => p.totalSeconds > 0)
+  const longest = projectsWithTime.length > 0
+    ? projectsWithTime.reduce((a, b) => (a.totalSeconds || 0) > (b.totalSeconds || 0) ? a : b)
+    : null
+  const quickest = projectsWithTime.length > 0
+    ? projectsWithTime.reduce((a, b) => (a.totalSeconds || 0) < (b.totalSeconds || 0) ? a : b)
+    : null
+
+  const yarnByProject = {}
+  for (const y of yarns) {
+    if (y.projectId && y.skeinsUsed > 0) {
+      yarnByProject[y.projectId] = (yarnByProject[y.projectId] || 0) + y.skeinsUsed
+    }
+  }
+  const projectsWithYarn = Object.entries(yarnByProject)
+  const mostYarnEntry = projectsWithYarn.length > 0
+    ? projectsWithYarn.reduce((a, b) => a[1] > b[1] ? a : b)
+    : null
+  const leastYarnEntry = projectsWithYarn.length > 0
+    ? projectsWithYarn.reduce((a, b) => a[1] < b[1] ? a : b)
+    : null
+  const mostYarnProject = mostYarnEntry ? allProjects.find(p => p.id === mostYarnEntry[0]) : null
+  const leastYarnProject = leastYarnEntry ? allProjects.find(p => p.id === leastYarnEntry[0]) : null
+
+  function formatTotalTime(sec) {
+    if (!sec) return '0m'
+    const h = Math.floor(sec / 3600)
+    const m = Math.floor((sec % 3600) / 60)
+    if (h > 0 && m > 0) return `${h}h ${m}m`
+    if (h > 0) return `${h}h`
+    if (m > 0) return `${m}m`
+    return '<1m'
+  }
+
+  function formatSkeins(n) {
+    return n % 1 === 0 ? n.toString() : n.toFixed(2).replace(/0$/, '')
+  }
 
   return (
     <div className="stats-page">
@@ -34,17 +66,57 @@ export default function Stats() {
         </div>
       </div>
 
-      {todoTotal > 0 && (
+      {totalSeconds > 0 && (
         <div className="stat-section">
-          <h3 className="section-label">To-Do Progress</h3>
-          <div className="stat-bar-container">
-            <div className="stat-bar">
-              <div
-                className="stat-bar-fill"
-                style={{ width: `${todoTotal ? Math.round((todoDone / todoTotal) * 100) : 0}%` }}
-              />
+          <h3 className="section-label">Knitting Time</h3>
+          <div className="stat-highlight">
+            <span className="stat-highlight-number">{formatTotalTime(totalSeconds)}</span>
+            <span className="stat-highlight-label">Total time knitting</span>
+          </div>
+          {longest && quickest && longest.id !== quickest.id && (
+            <div className="stat-list">
+              <div className="stat-list-item">
+                <span className="stat-list-label">Longest project</span>
+                <span className="stat-list-value">{longest.name}</span>
+                <span className="stat-list-meta">{formatTotalTime(longest.totalSeconds)}</span>
+              </div>
+              <div className="stat-list-item">
+                <span className="stat-list-label">Quickest project</span>
+                <span className="stat-list-value">{quickest.name}</span>
+                <span className="stat-list-meta">{formatTotalTime(quickest.totalSeconds)}</span>
+              </div>
             </div>
-            <span className="stat-bar-text">{todoDone} / {todoTotal} done</span>
+          )}
+          {longest && quickest && longest.id === quickest.id && (
+            <div className="stat-list">
+              <div className="stat-list-item">
+                <span className="stat-list-label">Only timed project</span>
+                <span className="stat-list-value">{longest.name}</span>
+                <span className="stat-list-meta">{formatTotalTime(longest.totalSeconds)}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {projectsWithYarn.length > 0 && (
+        <div className="stat-section">
+          <h3 className="section-label">Yarn Usage</h3>
+          <div className="stat-list">
+            {mostYarnProject && (
+              <div className="stat-list-item">
+                <span className="stat-list-label">Most yarn used</span>
+                <span className="stat-list-value">{mostYarnProject.name}</span>
+                <span className="stat-list-meta">{formatSkeins(mostYarnEntry[1])} skeins</span>
+              </div>
+            )}
+            {leastYarnProject && mostYarnProject && leastYarnProject.id !== mostYarnProject.id && (
+              <div className="stat-list-item">
+                <span className="stat-list-label">Least yarn used</span>
+                <span className="stat-list-value">{leastYarnProject.name}</span>
+                <span className="stat-list-meta">{formatSkeins(leastYarnEntry[1])} skeins</span>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -67,11 +139,11 @@ export default function Stats() {
         </div>
       )}
 
-      {totalProjects === 0 && yarnCount === 0 && todoTotal === 0 && (
+      {totalProjects === 0 && yarnCount === 0 && (
         <div className="empty-state">
           <div className="empty-icon">📊</div>
           <p>No stats yet</p>
-          <p className="subtle">Start adding projects, yarn, and to-dos to see your stats</p>
+          <p className="subtle">Start adding projects and yarn to see your stats</p>
         </div>
       )}
     </div>
