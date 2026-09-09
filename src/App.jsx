@@ -234,6 +234,7 @@ export default function App() {
             onFinish={() => finishProject(activeId)}
             onBack={() => setActiveId(null)}
             onAddPattern={(pattern) => setPatterns([pattern, ...patterns])}
+            onUpdatePattern={(id, updates) => setPatterns(patterns.map(p => p.id === id ? { ...p, ...updates } : p))}
           />
         )
       }
@@ -270,6 +271,7 @@ export default function App() {
         setFinished={setFinished}
         bankPatterns={patterns}
         onAddPattern={(pattern) => setPatterns([pattern, ...patterns])}
+        onUpdatePattern={(id, updates) => setPatterns(patterns.map(p => p.id === id ? { ...p, ...updates } : p))}
       />
     )
     if (tab === 'todo') return (

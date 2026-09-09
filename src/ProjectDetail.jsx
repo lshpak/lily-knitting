@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { getDrivePreviewUrl, pickFromDrive } from './googleDrive'
 import YarnForm from './YarnForm'
 
-export default function ProjectDetail({ project, yarns = [], yarnActions, bankPatterns = [], onUpdate, onDelete, onFinish, onBack, onAddPattern }) {
+export default function ProjectDetail({ project, yarns = [], yarnActions, bankPatterns = [], onUpdate, onDelete, onFinish, onBack, onAddPattern, onUpdatePattern }) {
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState(project.name)
   const [editType, setEditType] = useState(project.type || '')
@@ -18,6 +18,8 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
   const [showAddTime, setShowAddTime] = useState(false)
   const [addHours, setAddHours] = useState('')
   const [addMinutes, setAddMinutes] = useState('')
+  const [editingPattern, setEditingPattern] = useState(false)
+  const [editPatternContent, setEditPatternContent] = useState('')
 
   const timerKey = `timer_${project.id}`
 
@@ -461,8 +463,17 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
             </div>
             <div className="pattern-actions">
               {(linkedPattern.driveFileId || linkedPattern.source === 'written') && (
-                <button className="btn btn-primary btn-sm" onClick={() => setShowPdf(!showPdf)}>
+                <button className="btn btn-primary btn-sm" onClick={() => { setShowPdf(!showPdf); setEditingPattern(false) }}>
                   {showPdf ? 'Hide' : 'View'}
+                </button>
+              )}
+              {linkedPattern.source === 'written' && onUpdatePattern && (
+                <button className="btn btn-ghost btn-sm" onClick={() => {
+                  setEditingPattern(!editingPattern)
+                  setEditPatternContent(linkedPattern.content || '')
+                  setShowPdf(false)
+                }}>
+                  {editingPattern ? 'Cancel' : 'Edit'}
                 </button>
               )}
               <button className="btn btn-danger btn-sm" onClick={handleUnlink}>
@@ -523,6 +534,28 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
         {showPdf && linkedPattern?.source === 'written' && linkedPattern.content && (
           <div className="written-pattern-viewer">
             <pre className="written-pattern-text">{linkedPattern.content}</pre>
+          </div>
+        )}
+        {editingPattern && linkedPattern?.source === 'written' && (
+          <div className="write-pattern-form">
+            <textarea
+              autoFocus
+              className="write-pattern-content"
+              value={editPatternContent}
+              onChange={e => setEditPatternContent(e.target.value)}
+              rows={12}
+            />
+            <div className="form-actions">
+              <button className="btn btn-primary btn-sm" onClick={() => {
+                onUpdatePattern(linkedPattern.id, { content: editPatternContent })
+                setEditingPattern(false)
+              }}>
+                Save
+              </button>
+              <button className="btn btn-ghost btn-sm" onClick={() => setEditingPattern(false)}>
+                Cancel
+              </button>
+            </div>
           </div>
         )}
       </div>
