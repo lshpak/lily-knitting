@@ -16,43 +16,99 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
   const [newCounterName, setNewCounterName] = useState('')
   const [newNote, setNewNote] = useState('')
 
-  const [timerRunning, setTimerRunning] = useState(false)
-  const [timerPaused, setTimerPaused] = useState(false)
-  const [sessionSeconds, setSessionSeconds] = useState(0)
+  const timerKey = `timer_${project.id}`
+
+  function loadTimer() {
+    try {
+      const raw = localStorage.getItem(timerKey)
+      if (raw) return JSON.parse(raw)
+    } catch {}
+    return null
+  }
+
+  function saveTimer(state) {
+    localStorage.setItem(timerKey, JSON.stringify(state))
+  }
+
+  function clearTimer() {
+    localStorage.removeItem(timerKey)
+  }
+
+  const [timerRunning, setTimerRunning] = useState(() => {
+    const saved = loadTimer()
+    return saved ? saved.running : false
+  })
+  const [timerPaused, setTimerPaused] = useState(() => {
+    const saved = loadTimer()
+    return saved ? saved.paused : false
+  })
+  const [stoppedSeconds, setStoppedSeconds] = useState(0)
   const [showSavePrompt, setShowSavePrompt] = useState(false)
-  const intervalRef = useRef(null)
+  const [, setTick] = useState(0)
+  const resumedAtRef = useRef(null)
+  const accumulatedRef = useRef(0)
+
+  if (resumedAtRef.current === null && accumulatedRef.current === 0) {
+    const saved = loadTimer()
+    if (saved) {
+      resumedAtRef.current = saved.running && !saved.paused ? saved.resumedAt : null
+      accumulatedRef.current = saved.accumulated || 0
+    }
+  }
+
+  function getElapsed() {
+    if (!resumedAtRef.current) return accumulatedRef.current
+    return accumulatedRef.current + Math.floor((Date.now() - resumedAtRef.current) / 1000)
+  }
+
+  const sessionSeconds = timerRunning ? getElapsed() : stoppedSeconds
 
   useEffect(() => {
-    if (timerRunning && !timerPaused) {
-      intervalRef.current = setInterval(() => {
-        setSessionSeconds(s => s + 1)
-      }, 1000)
-    } else {
-      clearInterval(intervalRef.current)
+    if (!timerRunning || timerPaused) return
+    const id = setInterval(() => setTick(t => t + 1), 1000)
+    const onWake = () => setTick(t => t + 1)
+    document.addEventListener('visibilitychange', onWake)
+    window.addEventListener('focus', onWake)
+    window.addEventListener('pageshow', onWake)
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onWake)
+      window.removeEventListener('focus', onWake)
+      window.removeEventListener('pageshow', onWake)
     }
-    return () => clearInterval(intervalRef.current)
   }, [timerRunning, timerPaused])
 
   function startTimer() {
-    setSessionSeconds(0)
+    accumulatedRef.current = 0
+    resumedAtRef.current = Date.now()
+    saveTimer({ running: true, paused: false, resumedAt: resumedAtRef.current, accumulated: 0 })
     setTimerRunning(true)
     setTimerPaused(false)
     setShowSavePrompt(false)
   }
 
   function pauseTimer() {
+    accumulatedRef.current = getElapsed()
+    resumedAtRef.current = null
+    saveTimer({ running: true, paused: true, resumedAt: null, accumulated: accumulatedRef.current })
     setTimerPaused(true)
   }
 
   function resumeTimer() {
+    resumedAtRef.current = Date.now()
+    saveTimer({ running: true, paused: false, resumedAt: resumedAtRef.current, accumulated: accumulatedRef.current })
     setTimerPaused(false)
   }
 
   function stopTimer() {
+    const finalSeconds = getElapsed()
+    accumulatedRef.current = 0
+    resumedAtRef.current = null
+    clearTimer()
     setTimerRunning(false)
     setTimerPaused(false)
-    clearInterval(intervalRef.current)
-    if (sessionSeconds > 0) {
+    setStoppedSeconds(finalSeconds)
+    if (finalSeconds > 0) {
       setShowSavePrompt(true)
     }
   }
@@ -60,13 +116,15 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
   function saveSession() {
     const totalSeconds = (project.totalSeconds || 0) + sessionSeconds
     onUpdate({ totalSeconds })
+    clearTimer()
     setShowSavePrompt(false)
-    setSessionSeconds(0)
+    setStoppedSeconds(0)
   }
 
   function discardSession() {
+    clearTimer()
     setShowSavePrompt(false)
-    setSessionSeconds(0)
+    setStoppedSeconds(0)
   }
 
   function formatTime(totalSec) {
