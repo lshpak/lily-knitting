@@ -15,6 +15,9 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
   const [yarnMode, setYarnMode] = useState(null)
   const [newCounterName, setNewCounterName] = useState('')
   const [newNote, setNewNote] = useState('')
+  const [showAddTime, setShowAddTime] = useState(false)
+  const [addHours, setAddHours] = useState('')
+  const [addMinutes, setAddMinutes] = useState('')
 
   const timerKey = `timer_${project.id}`
 
@@ -125,6 +128,17 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
     clearTimer()
     setShowSavePrompt(false)
     setStoppedSeconds(0)
+  }
+
+  function addManualTime() {
+    const h = parseInt(addHours, 10) || 0
+    const m = parseInt(addMinutes, 10) || 0
+    const extraSeconds = h * 3600 + m * 60
+    if (extraSeconds <= 0) return
+    onUpdate({ totalSeconds: (project.totalSeconds || 0) + extraSeconds })
+    setAddHours('')
+    setAddMinutes('')
+    setShowAddTime(false)
   }
 
   function formatTime(totalSec) {
@@ -387,6 +401,54 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
           <button className="btn btn-outline" onClick={startTimer} style={{ width: '100%' }}>
             Start Timer
           </button>
+        )}
+        {!showSavePrompt && (
+          showAddTime ? (
+            <div className="manual-time-form">
+              <p className="picker-title">Add time</p>
+              <div className="manual-time-inputs">
+                <label className="manual-time-field">
+                  <input
+                    type="number"
+                    className="input input-sm"
+                    min="0"
+                    placeholder="0"
+                    value={addHours}
+                    onChange={e => setAddHours(e.target.value)}
+                  />
+                  <span>hours</span>
+                </label>
+                <label className="manual-time-field">
+                  <input
+                    type="number"
+                    className="input input-sm"
+                    min="0"
+                    max="59"
+                    placeholder="0"
+                    value={addMinutes}
+                    onChange={e => setAddMinutes(e.target.value)}
+                  />
+                  <span>minutes</span>
+                </label>
+              </div>
+              <div className="form-actions">
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={addManualTime}
+                  disabled={!(parseInt(addHours, 10) > 0 || parseInt(addMinutes, 10) > 0)}
+                >
+                  Add
+                </button>
+                <button className="btn btn-ghost btn-sm" onClick={() => { setShowAddTime(false); setAddHours(''); setAddMinutes('') }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowAddTime(true)} style={{ alignSelf: 'flex-start' }}>
+              + Add time manually
+            </button>
+          )
         )}
       </div>
 

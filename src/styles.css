@@ -826,6 +826,34 @@ body {
   color: var(--rose);
 }
 
+.manual-time-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.manual-time-inputs {
+  display: flex;
+  gap: 12px;
+}
+
+.manual-time-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.manual-time-field input {
+  width: 64px;
+  text-align: center;
+}
+
 /* Pattern PDF */
 .pattern-section {
   display: flex;
