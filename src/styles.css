@@ -1062,6 +1062,63 @@ body {
   margin-bottom: 4px;
 }
 
+.pattern-add-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pattern-add-actions .add-btn {
+  flex: 1;
+}
+
+.write-pattern-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.write-pattern-content {
+  width: 100%;
+  min-height: 200px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  background: var(--cream);
+}
+
+.write-pattern-content:focus {
+  outline: none;
+  border-color: var(--rose);
+}
+
+.written-pattern-viewer {
+  margin-top: 8px;
+  padding: 16px;
+  background: var(--cream);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.written-pattern-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
 .bank-linked-projects {
   display: block;
   font-size: 12px;

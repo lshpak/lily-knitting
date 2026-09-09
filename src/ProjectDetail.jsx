@@ -460,9 +460,11 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
               <span className="pattern-name">{linkedPattern.fileName}</span>
             </div>
             <div className="pattern-actions">
-              <button className="btn btn-primary btn-sm" onClick={() => setShowPdf(!showPdf)}>
-                {showPdf ? 'Hide' : 'View'}
-              </button>
+              {(linkedPattern.driveFileId || linkedPattern.source === 'written') && (
+                <button className="btn btn-primary btn-sm" onClick={() => setShowPdf(!showPdf)}>
+                  {showPdf ? 'Hide' : 'View'}
+                </button>
+              )}
               <button className="btn btn-danger btn-sm" onClick={handleUnlink}>
                 Unlink
               </button>
@@ -516,6 +518,11 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
         {showPdf && pdfUrl && (
           <div className="pdf-viewer">
             <iframe src={pdfUrl} title="Pattern PDF" />
+          </div>
+        )}
+        {showPdf && linkedPattern?.source === 'written' && linkedPattern.content && (
+          <div className="written-pattern-viewer">
+            <pre className="written-pattern-text">{linkedPattern.content}</pre>
           </div>
         )}
       </div>

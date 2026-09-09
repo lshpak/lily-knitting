@@ -15,6 +15,11 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
   const [editingWeightId, setEditingWeightId] = useState(null)
   const [weightInput, setWeightInput] = useState('')
   const [weightFilter, setWeightFilter] = useState(null)
+  const [writingPattern, setWritingPattern] = useState(false)
+  const [writeTitle, setWriteTitle] = useState('')
+  const [writeContent, setWriteContent] = useState('')
+  const [editingContentId, setEditingContentId] = useState(null)
+  const [editContent, setEditContent] = useState('')
   const menuRef = useRef(null)
 
   useEffect(() => {
@@ -69,7 +74,9 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
       return
     }
     const pattern = patterns.find(p => p.id === id)
-    if (pattern?.driveFileId) {
+    if (pattern?.source === 'written') {
+      handleViewWritten(id)
+    } else if (pattern?.driveFileId) {
       setPdfUrl(getDrivePreviewUrl(pattern.driveFileId))
       setViewingId(id)
     }
@@ -124,6 +131,50 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
     setWeightInput('')
   }
 
+  function handleWritePattern(e) {
+    e.preventDefault()
+    const title = writeTitle.trim()
+    const content = writeContent.trim()
+    if (!title || !content) return
+    const id = Date.now().toString()
+    setPatterns([
+      {
+        id,
+        fileName: title,
+        addedAt: new Date().toISOString(),
+        source: 'written',
+        content,
+      },
+      ...patterns,
+    ])
+    setWriteTitle('')
+    setWriteContent('')
+    setWritingPattern(false)
+  }
+
+  function handleEditContent(id) {
+    const pattern = patterns.find(p => p.id === id)
+    setEditContent(pattern?.content || '')
+    setEditingContentId(id)
+    setViewingId(null)
+    setMenuOpen(null)
+  }
+
+  function saveContent(id) {
+    setPatterns(patterns.map(p => p.id === id ? { ...p, content: editContent } : p))
+    setEditingContentId(null)
+    setEditContent('')
+  }
+
+  function handleViewWritten(id) {
+    if (viewingId === id) {
+      closeViewer()
+      return
+    }
+    setViewingId(id)
+    setPdfUrl(null)
+  }
+
   const weights = [...new Set(patterns.map(p => p.yarnWeight).filter(Boolean))].sort()
   const filteredPatterns = weightFilter
     ? patterns.filter(p => p.yarnWeight === weightFilter)
@@ -131,13 +182,49 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
 
   return (
     <div className="section-list">
-      <button
-        className="btn btn-primary add-btn"
-        onClick={handleDrivePick}
-        disabled={picking}
-      >
-        {picking ? 'Opening...' : 'Add from Google Drive'}
-      </button>
+      <div className="pattern-add-actions">
+        <button
+          className="btn btn-primary add-btn"
+          onClick={handleDrivePick}
+          disabled={picking}
+        >
+          {picking ? 'Opening...' : 'Add from Google Drive'}
+        </button>
+        <button
+          className="btn btn-outline add-btn"
+          onClick={() => setWritingPattern(!writingPattern)}
+        >
+          Write a Pattern
+        </button>
+      </div>
+
+      {writingPattern && (
+        <form className="write-pattern-form" onSubmit={handleWritePattern}>
+          <input
+            autoFocus
+            type="text"
+            className="input"
+            placeholder="Pattern title..."
+            value={writeTitle}
+            onChange={e => setWriteTitle(e.target.value)}
+          />
+          <textarea
+            className="write-pattern-content"
+            placeholder="Write your pattern instructions here..."
+            value={writeContent}
+            onChange={e => setWriteContent(e.target.value)}
+            rows={10}
+          />
+          <div className="form-actions">
+            <button type="submit" className="btn btn-primary btn-sm" disabled={!writeTitle.trim() || !writeContent.trim()}>
+              Save Pattern
+            </button>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setWritingPattern(false); setWriteTitle(''); setWriteContent('') }}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
 
       {weights.length > 1 && (
         <div className="filter-chips">
@@ -205,6 +292,11 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
                         <button onClick={() => { handleCreateClick(p.id); setMenuOpen(null) }}>
                           New Project
                         </button>
+                        {p.source === 'written' && (
+                          <button onClick={() => handleEditContent(p.id)}>
+                            Edit Pattern
+                          </button>
+                        )}
                         <button onClick={() => handleEditWeight(p.id)}>
                           {p.yarnWeight ? 'Edit Yarn Weight' : 'Set Yarn Weight'}
                         </button>
@@ -222,6 +314,12 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
                   </div>
                 )}
 
+                {viewingId === p.id && p.source === 'written' && !pdfUrl && (
+                  <div className="written-pattern-viewer">
+                    <pre className="written-pattern-text">{p.content}</pre>
+                  </div>
+                )}
+
                 {editingWeightId === p.id && (
                   <div className="bank-weight-edit">
                     <input
@@ -235,6 +333,22 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
                     />
                     <button className="btn btn-primary btn-sm" onClick={() => saveWeight(p.id)}>Save</button>
                     <button className="btn btn-ghost btn-sm" onClick={() => setEditingWeightId(null)}>Cancel</button>
+                  </div>
+                )}
+
+                {editingContentId === p.id && (
+                  <div className="write-pattern-form">
+                    <textarea
+                      autoFocus
+                      className="write-pattern-content"
+                      value={editContent}
+                      onChange={e => setEditContent(e.target.value)}
+                      rows={10}
+                    />
+                    <div className="form-actions">
+                      <button className="btn btn-primary btn-sm" onClick={() => saveContent(p.id)}>Save</button>
+                      <button className="btn btn-ghost btn-sm" onClick={() => setEditingContentId(null)}>Cancel</button>
+                    </div>
                   </div>
                 )}
 
