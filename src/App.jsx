@@ -274,14 +274,37 @@ export default function App() {
         onUpdatePattern={(id, updates) => setPatterns(patterns.map(p => p.id === id ? { ...p, ...updates } : p))}
       />
     )
-    if (tab === 'todo') return (
-      <TodoList
-        unstartedProjects={unstartedProjects}
-        onAddProject={addProject}
-        onStartProject={startProject}
-        onDeleteProject={deleteProject}
-      />
-    )
+    if (tab === 'todo') {
+      const activeTodo = unstartedProjects.find(p => p.id === activeId)
+      if (activeTodo) {
+        return (
+          <ProjectDetail
+            project={activeTodo}
+            yarns={yarns}
+            yarnActions={yarnActions}
+            bankPatterns={patterns}
+            onUpdate={(updates) => updateProject(activeId, updates)}
+            onDelete={() => deleteProject(activeId)}
+            onBack={() => setActiveId(null)}
+            onAddPattern={(pattern) => setPatterns([pattern, ...patterns])}
+            onUpdatePattern={(id, updates) => setPatterns(patterns.map(p => p.id === id ? { ...p, ...updates } : p))}
+          />
+        )
+      }
+      const todosWithYarnCount = unstartedProjects.map(p => ({
+        ...p,
+        linkedYarnCount: yarns.filter(y => y.projectId === p.id).length,
+      }))
+      return (
+        <TodoList
+          unstartedProjects={todosWithYarnCount}
+          onAddProject={addProject}
+          onStartProject={startProject}
+          onDeleteProject={deleteProject}
+          onSelect={setActiveId}
+        />
+      )
+    }
     if (tab === 'stats') return <Stats projects={projects} finished={finished} yarns={yarns} />
   }
 

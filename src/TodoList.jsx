@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function TodoList({ unstartedProjects = [], onAddProject, onStartProject, onDeleteProject }) {
+export default function TodoList({ unstartedProjects = [], onAddProject, onStartProject, onDeleteProject, onSelect }) {
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
   const [type, setType] = useState('')
@@ -97,7 +97,7 @@ export default function TodoList({ unstartedProjects = [], onAddProject, onStart
       {unstartedProjects.length > 0 && (
         <div className="items">
           {unstartedProjects.map(p => (
-            <div key={p.id} className="project-card">
+            <div key={p.id} className="project-card" onClick={() => onSelect(p.id)} style={{ cursor: 'pointer' }}>
               <div className="project-card-info">
                 {p.type && <span className="project-tag">{p.type}</span>}
                 <h3>{p.name}</h3>
@@ -106,8 +106,13 @@ export default function TodoList({ unstartedProjects = [], onAddProject, onStart
                     {[p.designer ? `by ${p.designer}` : '', p.size ? `Size ${p.size}` : ''].filter(Boolean).join(' · ')}
                   </span>
                 )}
+                {p.linkedYarnCount > 0 && (
+                  <span className="project-card-meta">
+                    {p.linkedYarnCount} yarn{p.linkedYarnCount > 1 ? 's' : ''} linked
+                  </span>
+                )}
               </div>
-              <div className="project-card-actions">
+              <div className="project-card-actions" onClick={e => e.stopPropagation()}>
                 {startingId === p.id ? (
                   <div className="start-date-picker">
                     <input
