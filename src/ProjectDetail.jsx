@@ -362,9 +362,12 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
             {project.startedAt && <span className="project-meta">Started: {project.startedAt}</span>}
             {project.startedAt && (() => {
               const start = new Date(project.startedAt + 'T00:00:00')
-              const now = new Date()
-              const days = Math.floor((now - start) / (1000 * 60 * 60 * 24))
-              return <span className="project-meta days-badge">{days === 0 ? 'Started today' : `${days} day${days === 1 ? '' : 's'} in progress`}</span>
+              const end = project.finishedAt ? new Date(project.finishedAt) : new Date()
+              const days = Math.floor((end - start) / (1000 * 60 * 60 * 24))
+              const label = project.finishedAt
+                ? `${days} day${days === 1 ? '' : 's'} to complete`
+                : days === 0 ? 'Started today' : `${days} day${days === 1 ? '' : 's'} in progress`
+              return <span className="project-meta days-badge">{label}</span>
             })()}
           </div>
           <button className="btn btn-ghost btn-sm" onClick={startEditing}>Edit</button>
