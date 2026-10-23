@@ -9,7 +9,8 @@ import FinishedProjects from './FinishedProjects'
 import Stats from './Stats'
 import TodoList from './TodoList'
 import PatternBank from './PatternBank'
-import { WipsIcon, YarnIcon, PatternsIcon, DoneIcon, TodoIcon, StatsIcon } from './Icons'
+import Calendar from './Calendar'
+import { WipsIcon, YarnIcon, PatternsIcon, DoneIcon, TodoIcon, StatsIcon, CalendarIcon } from './Icons'
 import './styles.css'
 
 function NewProjectForm({ onAdd, onCancel }) {
@@ -51,6 +52,7 @@ const TABS = [
   { id: 'patterns', label: 'Patterns', Icon: PatternsIcon },
   { id: 'yarn', label: 'Yarn', Icon: YarnIcon },
   { id: 'stats', label: 'Stats', Icon: StatsIcon },
+  { id: 'calendar', label: 'Calendar', Icon: CalendarIcon },
 ]
 
 export default function App() {
@@ -88,6 +90,7 @@ export default function App() {
   const yarns = data.yarns || []
   const pastYarns = data.pastYarns || []
   const patterns = data.patterns || []
+  const sessions = data.sessions || []
 
   function setTab(t) { updateData('tab', t) }
   function setProjects(p) { updateData('projects', typeof p === 'function' ? p(projects) : p) }
@@ -95,6 +98,20 @@ export default function App() {
   function setYarns(y) { updateData('yarns', typeof y === 'function' ? y(yarns) : y) }
   function setPastYarns(py) { updateData('pastYarns', typeof py === 'function' ? py(pastYarns) : py) }
   function setPatterns(p) { updateData('patterns', typeof p === 'function' ? p(patterns) : p) }
+  function setSessions(s) { updateData('sessions', typeof s === 'function' ? s(sessions) : s) }
+
+  function addSession(projectId, seconds) {
+    const now = new Date()
+    const date = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
+    const session = {
+      id: Date.now().toString(),
+      projectId,
+      date,
+      seconds,
+      addedAt: now.toISOString(),
+    }
+    setSessions([session, ...sessions])
+  }
 
   const today = new Date().toISOString().split('T')[0]
   const activeProject = projects.find(p => p.id === activeId)
@@ -210,6 +227,7 @@ export default function App() {
     const proj = projects.find(p => p.id === globalTimer.projectId)
     if (proj) {
       updateProject(globalTimer.projectId, { totalSeconds: (proj.totalSeconds || 0) + globalTimer.seconds })
+      addSession(globalTimer.projectId, globalTimer.seconds)
     }
     setGlobalTimer({ running: false, paused: false, projectId: null, seconds: 0, picking: false, saving: false })
   }
@@ -235,6 +253,7 @@ export default function App() {
             onBack={() => setActiveId(null)}
             onAddPattern={(pattern) => setPatterns([pattern, ...patterns])}
             onUpdatePattern={(id, updates) => setPatterns(patterns.map(p => p.id === id ? { ...p, ...updates } : p))}
+            onLogSession={(seconds) => addSession(activeId, seconds)}
           />
         )
       }
@@ -272,6 +291,7 @@ export default function App() {
         bankPatterns={patterns}
         onAddPattern={(pattern) => setPatterns([pattern, ...patterns])}
         onUpdatePattern={(id, updates) => setPatterns(patterns.map(p => p.id === id ? { ...p, ...updates } : p))}
+        onLogSession={addSession}
       />
     )
     if (tab === 'todo') {
@@ -288,6 +308,7 @@ export default function App() {
             onBack={() => setActiveId(null)}
             onAddPattern={(pattern) => setPatterns([pattern, ...patterns])}
             onUpdatePattern={(id, updates) => setPatterns(patterns.map(p => p.id === id ? { ...p, ...updates } : p))}
+            onLogSession={(seconds) => addSession(activeId, seconds)}
           />
         )
       }
@@ -305,6 +326,7 @@ export default function App() {
         />
       )
     }
+    if (tab === 'calendar') return <Calendar sessions={sessions} projects={projects} finished={finished} />
     if (tab === 'stats') return <Stats projects={projects} finished={finished} yarns={yarns} />
   }
 

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ProjectDetail from './ProjectDetail'
 
-export default function FinishedProjects({ finished, setFinished, bankPatterns = [], onAddPattern, onUpdatePattern }) {
+export default function FinishedProjects({ finished, setFinished, bankPatterns = [], onAddPattern, onUpdatePattern, onLogSession }) {
   const [activeId, setActiveId] = useState(null)
 
   const activeProject = finished.find(p => p.id === activeId)
@@ -27,6 +27,7 @@ export default function FinishedProjects({ finished, setFinished, bankPatterns =
         onBack={() => setActiveId(null)}
         onAddPattern={onAddPattern}
         onUpdatePattern={onUpdatePattern}
+        onLogSession={onLogSession ? (seconds) => onLogSession(activeId, seconds) : undefined}
       />
     )
   }

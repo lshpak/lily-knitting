@@ -248,11 +248,12 @@ body {
 
 .tab {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 8px 4px;
+  padding: 8px 2px;
   background: none;
   border: none;
   cursor: pointer;
@@ -280,14 +281,14 @@ body {
 }
 
 .tab-icon-svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .tab-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 
 /* Buttons */
@@ -1664,4 +1665,207 @@ body {
   color: var(--rose);
   min-width: 24px;
   text-align: center;
+}
+
+.calendar-page {
+  padding: 8px 0;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+  margin-bottom: 8px;
+}
+
+.calendar-month-label {
+  background: none;
+  border: none;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.calendar-month-label:active {
+  background: var(--border);
+}
+
+.calendar-month-stats {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 12px;
+}
+
+.calendar-month-stats span:first-child {
+  font-weight: 600;
+  color: var(--rose);
+}
+
+.calendar-month-stats-sep {
+  margin: 0 6px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+.calendar-day-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-light);
+  padding: 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.calendar-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--warm-white);
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 2px;
+  font-family: inherit;
+  color: var(--text);
+  transition: background 0.15s, border-color 0.15s;
+  position: relative;
+}
+
+.calendar-cell:active {
+  transform: scale(0.95);
+}
+
+.calendar-cell-empty {
+  background: transparent;
+  cursor: default;
+}
+
+.calendar-cell-empty:active {
+  transform: none;
+}
+
+.calendar-day-num {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.calendar-day-time {
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--rose);
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.calendar-intensity-1 {
+  background: #e8ddf2;
+}
+
+.calendar-intensity-2 {
+  background: #d0b8e5;
+}
+
+.calendar-intensity-3 {
+  background: #b48fd4;
+}
+
+.calendar-intensity-3 .calendar-day-num,
+.calendar-intensity-3 .calendar-day-time {
+  color: white;
+}
+
+.calendar-intensity-4 {
+  background: var(--rose);
+}
+
+.calendar-intensity-4 .calendar-day-num,
+.calendar-intensity-4 .calendar-day-time {
+  color: white;
+}
+
+.calendar-today {
+  border-color: var(--rose);
+}
+
+.calendar-selected {
+  border-color: var(--rose-dark);
+  box-shadow: 0 0 0 1px var(--rose-dark);
+}
+
+.calendar-detail {
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.calendar-detail-date {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.calendar-detail-empty {
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.calendar-detail-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rose);
+  margin-bottom: 10px;
+}
+
+.calendar-detail-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calendar-project-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--cream);
+  border-radius: 8px;
+}
+
+.calendar-project-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.calendar-project-name {
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-project-time {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rose);
+  white-space: nowrap;
+  margin-left: 8px;
 }

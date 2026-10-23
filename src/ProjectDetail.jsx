@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { getDrivePreviewUrl, pickFromDrive } from './googleDrive'
 import YarnForm from './YarnForm'
 
-export default function ProjectDetail({ project, yarns = [], yarnActions, bankPatterns = [], onUpdate, onDelete, onFinish, onBack, onAddPattern, onUpdatePattern }) {
+export default function ProjectDetail({ project, yarns = [], yarnActions, bankPatterns = [], onUpdate, onDelete, onFinish, onBack, onAddPattern, onUpdatePattern, onLogSession }) {
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState(project.name)
   const [editType, setEditType] = useState(project.type || '')
@@ -121,6 +121,7 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
   function saveSession() {
     const totalSeconds = (project.totalSeconds || 0) + sessionSeconds
     onUpdate({ totalSeconds })
+    if (onLogSession) onLogSession(sessionSeconds)
     clearTimer()
     setShowSavePrompt(false)
     setStoppedSeconds(0)
@@ -138,6 +139,7 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
     const extraSeconds = h * 3600 + m * 60
     if (extraSeconds <= 0) return
     onUpdate({ totalSeconds: (project.totalSeconds || 0) + extraSeconds })
+    if (onLogSession) onLogSession(extraSeconds)
     setAddHours('')
     setAddMinutes('')
     setShowAddTime(false)

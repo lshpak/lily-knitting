@@ -11,6 +11,7 @@ const STORAGE_KEYS = {
   yarns: 'lily-yarns',
   pastYarns: 'lily-yarns-past',
   patterns: 'lily-patterns',
+  sessions: 'lily-sessions',
   tab: 'lily-tab',
 }
 
@@ -20,6 +21,7 @@ const DEFAULTS = {
   yarns: [],
   pastYarns: [],
   patterns: [],
+  sessions: [],
   tab: 'wips',
 }
 
