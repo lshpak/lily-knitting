@@ -3,7 +3,7 @@ export default function Stats({ projects = [], finished = [], yarns = [] }) {
   const today = new Date().toISOString().split('T')[0]
   const wipCount = projects.filter(p => p.startedAt && p.startedAt <= today).length
   const finishedCount = finished.length
-  const totalProjects = allProjects.length
+  const totalProjects = projects.length
   const yarnCount = yarns.length
 
   const totalSeconds = allProjects.reduce((sum, p) => sum + (p.totalSeconds || 0), 0)
