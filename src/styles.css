@@ -1297,6 +1297,20 @@ body {
   color: white;
 }
 
+.pattern-type-group + .pattern-type-group {
+  margin-top: 16px;
+}
+
+.pattern-type-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: capitalize;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
 /* Yarn stash */
 .yarn-card {
   display: flex;

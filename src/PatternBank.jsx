@@ -15,8 +15,12 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
   const [editingWeightId, setEditingWeightId] = useState(null)
   const [weightInput, setWeightInput] = useState('')
   const [weightFilter, setWeightFilter] = useState(null)
+  const [editingTypeId, setEditingTypeId] = useState(null)
+  const [typeInput, setTypeInput] = useState('')
+  const [typeFilter, setTypeFilter] = useState(null)
   const [writingPattern, setWritingPattern] = useState(false)
   const [writeTitle, setWriteTitle] = useState('')
+  const [writeType, setWriteType] = useState('')
   const [writeContent, setWriteContent] = useState('')
   const [editingContentId, setEditingContentId] = useState(null)
   const [editContent, setEditContent] = useState('')
@@ -131,6 +135,19 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
     setWeightInput('')
   }
 
+  function handleEditType(id) {
+    const pattern = patterns.find(p => p.id === id)
+    setTypeInput(pattern?.type || '')
+    setEditingTypeId(id)
+    setMenuOpen(null)
+  }
+
+  function saveType(id) {
+    setPatterns(patterns.map(p => p.id === id ? { ...p, type: typeInput.trim() || null } : p))
+    setEditingTypeId(null)
+    setTypeInput('')
+  }
+
   function handleWritePattern(e) {
     e.preventDefault()
     const title = writeTitle.trim()
@@ -144,10 +161,12 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
         addedAt: new Date().toISOString(),
         source: 'written',
         content,
+        type: writeType.trim() || null,
       },
       ...patterns,
     ])
     setWriteTitle('')
+    setWriteType('')
     setWriteContent('')
     setWritingPattern(false)
   }
@@ -176,9 +195,21 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
   }
 
   const weights = [...new Set(patterns.map(p => p.yarnWeight).filter(Boolean))].sort()
-  const filteredPatterns = weightFilter
-    ? patterns.filter(p => p.yarnWeight === weightFilter)
-    : patterns
+  const types = [...new Set(patterns.map(p => p.type).filter(Boolean))].sort()
+  let filteredPatterns = patterns
+  if (weightFilter) filteredPatterns = filteredPatterns.filter(p => p.yarnWeight === weightFilter)
+  if (typeFilter) filteredPatterns = filteredPatterns.filter(p => p.type === typeFilter)
+
+  const groupedPatterns = []
+  const byType = {}
+  for (const p of filteredPatterns) {
+    const key = p.type || ''
+    if (!byType[key]) byType[key] = []
+    byType[key].push(p)
+  }
+  const sortedTypes = Object.keys(byType).filter(k => k).sort()
+  for (const t of sortedTypes) groupedPatterns.push({ type: t, patterns: byType[t] })
+  if (byType['']) groupedPatterns.push({ type: null, patterns: byType[''] })
 
   return (
     <div className="section-list">
@@ -208,6 +239,13 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
             value={writeTitle}
             onChange={e => setWriteTitle(e.target.value)}
           />
+          <input
+            type="text"
+            className="input"
+            placeholder="Type (sweater, scarf, hat...)"
+            value={writeType}
+            onChange={e => setWriteType(e.target.value)}
+          />
           <textarea
             className="write-pattern-content"
             placeholder="Write your pattern instructions here..."
@@ -219,11 +257,31 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
             <button type="submit" className="btn btn-primary btn-sm" disabled={!writeTitle.trim() || !writeContent.trim()}>
               Save Pattern
             </button>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setWritingPattern(false); setWriteTitle(''); setWriteContent('') }}>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setWritingPattern(false); setWriteTitle(''); setWriteType(''); setWriteContent('') }}>
               Cancel
             </button>
           </div>
         </form>
+      )}
+
+      {types.length > 1 && (
+        <div className="filter-chips">
+          <button
+            className={`filter-chip ${!typeFilter ? 'filter-chip-active' : ''}`}
+            onClick={() => setTypeFilter(null)}
+          >
+            All Types
+          </button>
+          {types.map(t => (
+            <button
+              key={t}
+              className={`filter-chip ${typeFilter === t ? 'filter-chip-active' : ''}`}
+              onClick={() => setTypeFilter(typeFilter === t ? null : t)}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
       )}
 
       {weights.length > 1 && (
@@ -232,7 +290,7 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
             className={`filter-chip ${!weightFilter ? 'filter-chip-active' : ''}`}
             onClick={() => setWeightFilter(null)}
           >
-            All
+            All Weights
           </button>
           {weights.map(w => (
             <button
@@ -254,174 +312,199 @@ export default function PatternBank({ patterns, setPatterns, projects = [], onLi
         </div>
       )}
 
-      {filteredPatterns.length > 0 && (
-        <div className="items">
-          {filteredPatterns.map(p => {
-            const linkedProjects = projects.filter(pr => pr.patternId === p.id)
-            const available = getUnlinkedProjects()
+      {groupedPatterns.length > 0 && groupedPatterns.map(group => (
+        <div key={group.type || '_none'} className="pattern-type-group">
+          {(groupedPatterns.length > 1 || group.type) && (
+            <h3 className="pattern-type-heading">{group.type || 'Other'}</h3>
+          )}
+          <div className="items">
+            {group.patterns.map(p => {
+              const linkedProjects = projects.filter(pr => pr.patternId === p.id)
+              const available = getUnlinkedProjects()
 
-            return (
-              <div key={p.id}>
-                <div className="bank-card" onClick={() => handleView(p.id)}>
-                  <div className="bank-card-left">
-                    <div className="bank-card-info">
-                      <h3>{p.fileName}</h3>
-                      <span className="item-card-meta">
-                        {new Date(p.addedAt).toLocaleDateString()}
-                        {p.yarnWeight && <> · {p.yarnWeight}</>}
-                      </span>
-                      {linkedProjects.length > 0 && (
-                        <span className="bank-linked-projects">
-                          {linkedProjects.map(pr => pr.name).join(', ')}
+              return (
+                <div key={p.id}>
+                  <div className="bank-card" onClick={() => handleView(p.id)}>
+                    <div className="bank-card-left">
+                      <div className="bank-card-info">
+                        {p.type && <span className="project-tag">{p.type}</span>}
+                        <h3>{p.fileName}</h3>
+                        <span className="item-card-meta">
+                          {new Date(p.addedAt).toLocaleDateString()}
+                          {p.yarnWeight && <> · {p.yarnWeight}</>}
                         </span>
+                        {linkedProjects.length > 0 && (
+                          <span className="bank-linked-projects">
+                            {linkedProjects.map(pr => pr.name).join(', ')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="bank-card-actions" ref={menuOpen === p.id ? menuRef : null} onClick={e => e.stopPropagation()}>
+                      <button
+                        className="btn btn-ghost btn-sm dots-btn"
+                        onClick={() => setMenuOpen(menuOpen === p.id ? null : p.id)}
+                      >
+                        &#x22EE;
+                      </button>
+                      {menuOpen === p.id && (
+                        <div className="dots-menu">
+                          <button onClick={() => { handleLinkClick(p.id); setMenuOpen(null) }}>
+                            Link to Project
+                          </button>
+                          <button onClick={() => { handleCreateClick(p.id); setMenuOpen(null) }}>
+                            New Project
+                          </button>
+                          {p.source === 'written' && (
+                            <button onClick={() => handleEditContent(p.id)}>
+                              Edit Pattern
+                            </button>
+                          )}
+                          <button onClick={() => handleEditType(p.id)}>
+                            {p.type ? 'Edit Type' : 'Set Type'}
+                          </button>
+                          <button onClick={() => handleEditWeight(p.id)}>
+                            {p.yarnWeight ? 'Edit Yarn Weight' : 'Set Yarn Weight'}
+                          </button>
+                          <button className="dots-menu-danger" onClick={() => { handleDelete(p.id); setMenuOpen(null) }}>
+                            Delete
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
-                  <div className="bank-card-actions" ref={menuOpen === p.id ? menuRef : null} onClick={e => e.stopPropagation()}>
-                    <button
-                      className="btn btn-ghost btn-sm dots-btn"
-                      onClick={() => setMenuOpen(menuOpen === p.id ? null : p.id)}
-                    >
-                      &#x22EE;
-                    </button>
-                    {menuOpen === p.id && (
-                      <div className="dots-menu">
-                        <button onClick={() => { handleLinkClick(p.id); setMenuOpen(null) }}>
-                          Link to Project
+
+                  {viewingId === p.id && pdfUrl && (
+                    <div className="pdf-viewer bank-pdf-viewer">
+                      <iframe src={pdfUrl} title={p.fileName} />
+                    </div>
+                  )}
+
+                  {viewingId === p.id && p.source === 'written' && !pdfUrl && (
+                    <div className="written-pattern-viewer">
+                      <pre className="written-pattern-text">{p.content}</pre>
+                    </div>
+                  )}
+
+                  {editingTypeId === p.id && (
+                    <div className="bank-weight-edit">
+                      <input
+                        autoFocus
+                        type="text"
+                        className="input input-sm"
+                        placeholder="Type (sweater, scarf, hat...)"
+                        value={typeInput}
+                        onChange={e => setTypeInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') saveType(p.id) }}
+                      />
+                      <button className="btn btn-primary btn-sm" onClick={() => saveType(p.id)}>Save</button>
+                      <button className="btn btn-ghost btn-sm" onClick={() => setEditingTypeId(null)}>Cancel</button>
+                    </div>
+                  )}
+
+                  {editingWeightId === p.id && (
+                    <div className="bank-weight-edit">
+                      <input
+                        autoFocus
+                        type="text"
+                        className="input input-sm"
+                        placeholder="Yarn weight (DK, Worsted, Bulky...)"
+                        value={weightInput}
+                        onChange={e => setWeightInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') saveWeight(p.id) }}
+                      />
+                      <button className="btn btn-primary btn-sm" onClick={() => saveWeight(p.id)}>Save</button>
+                      <button className="btn btn-ghost btn-sm" onClick={() => setEditingWeightId(null)}>Cancel</button>
+                    </div>
+                  )}
+
+                  {editingContentId === p.id && (
+                    <div className="write-pattern-form">
+                      <textarea
+                        autoFocus
+                        className="write-pattern-content"
+                        value={editContent}
+                        onChange={e => setEditContent(e.target.value)}
+                        rows={10}
+                      />
+                      <div className="form-actions">
+                        <button className="btn btn-primary btn-sm" onClick={() => saveContent(p.id)}>Save</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => setEditingContentId(null)}>Cancel</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {linkingId === p.id && (
+                    <div className="bank-picker">
+                      {available.length === 0 ? (
+                        <p className="yarn-link-empty">No projects without a pattern</p>
+                      ) : (
+                        <div className="items">
+                          {available.map(pr => (
+                            <button
+                              key={pr.id}
+                              className="project-yarn-pick-card"
+                              onClick={() => handlePickProject(p.id, pr.id)}
+                            >
+                              <div className="project-yarn-info">
+                                {pr.type && <span className="project-tag">{pr.type}</span>}
+                                <h3>{pr.name}</h3>
+                                {pr.designer && <span className="yarn-meta-inline">by {pr.designer}</span>}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {creatingFor === p.id && (
+                    <form className="bank-new-project" onSubmit={(e) => handleCreateSubmit(e, p.id)}>
+                      <input
+                        autoFocus
+                        type="text"
+                        className="input"
+                        placeholder="Project name..."
+                        value={newName}
+                        onChange={e => setNewName(e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        className="input"
+                        placeholder="Type (sweater, scarf, hat...)"
+                        value={newType}
+                        onChange={e => setNewType(e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        className="input"
+                        placeholder="Pattern designer"
+                        value={newDesigner}
+                        onChange={e => setNewDesigner(e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        className="input"
+                        placeholder="Size (S, M, L, 40in chest...)"
+                        value={newSize}
+                        onChange={e => setNewSize(e.target.value)}
+                      />
+                      <div className="form-actions">
+                        <button type="submit" className="btn btn-primary btn-sm" disabled={!newName.trim()}>
+                          Create
                         </button>
-                        <button onClick={() => { handleCreateClick(p.id); setMenuOpen(null) }}>
-                          New Project
-                        </button>
-                        {p.source === 'written' && (
-                          <button onClick={() => handleEditContent(p.id)}>
-                            Edit Pattern
-                          </button>
-                        )}
-                        <button onClick={() => handleEditWeight(p.id)}>
-                          {p.yarnWeight ? 'Edit Yarn Weight' : 'Set Yarn Weight'}
-                        </button>
-                        <button className="dots-menu-danger" onClick={() => { handleDelete(p.id); setMenuOpen(null) }}>
-                          Delete
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setCreatingFor(null)}>
+                          Cancel
                         </button>
                       </div>
-                    )}
-                  </div>
+                    </form>
+                  )}
                 </div>
-
-                {viewingId === p.id && pdfUrl && (
-                  <div className="pdf-viewer bank-pdf-viewer">
-                    <iframe src={pdfUrl} title={p.fileName} />
-                  </div>
-                )}
-
-                {viewingId === p.id && p.source === 'written' && !pdfUrl && (
-                  <div className="written-pattern-viewer">
-                    <pre className="written-pattern-text">{p.content}</pre>
-                  </div>
-                )}
-
-                {editingWeightId === p.id && (
-                  <div className="bank-weight-edit">
-                    <input
-                      autoFocus
-                      type="text"
-                      className="input input-sm"
-                      placeholder="Yarn weight (DK, Worsted, Bulky...)"
-                      value={weightInput}
-                      onChange={e => setWeightInput(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') saveWeight(p.id) }}
-                    />
-                    <button className="btn btn-primary btn-sm" onClick={() => saveWeight(p.id)}>Save</button>
-                    <button className="btn btn-ghost btn-sm" onClick={() => setEditingWeightId(null)}>Cancel</button>
-                  </div>
-                )}
-
-                {editingContentId === p.id && (
-                  <div className="write-pattern-form">
-                    <textarea
-                      autoFocus
-                      className="write-pattern-content"
-                      value={editContent}
-                      onChange={e => setEditContent(e.target.value)}
-                      rows={10}
-                    />
-                    <div className="form-actions">
-                      <button className="btn btn-primary btn-sm" onClick={() => saveContent(p.id)}>Save</button>
-                      <button className="btn btn-ghost btn-sm" onClick={() => setEditingContentId(null)}>Cancel</button>
-                    </div>
-                  </div>
-                )}
-
-                {linkingId === p.id && (
-                  <div className="bank-picker">
-                    {available.length === 0 ? (
-                      <p className="yarn-link-empty">No projects without a pattern</p>
-                    ) : (
-                      <div className="items">
-                        {available.map(pr => (
-                          <button
-                            key={pr.id}
-                            className="project-yarn-pick-card"
-                            onClick={() => handlePickProject(p.id, pr.id)}
-                          >
-                            <div className="project-yarn-info">
-                              {pr.type && <span className="project-tag">{pr.type}</span>}
-                              <h3>{pr.name}</h3>
-                              {pr.designer && <span className="yarn-meta-inline">by {pr.designer}</span>}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {creatingFor === p.id && (
-                  <form className="bank-new-project" onSubmit={(e) => handleCreateSubmit(e, p.id)}>
-                    <input
-                      autoFocus
-                      type="text"
-                      className="input"
-                      placeholder="Project name..."
-                      value={newName}
-                      onChange={e => setNewName(e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      className="input"
-                      placeholder="Type (sweater, scarf, hat...)"
-                      value={newType}
-                      onChange={e => setNewType(e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      className="input"
-                      placeholder="Pattern designer"
-                      value={newDesigner}
-                      onChange={e => setNewDesigner(e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      className="input"
-                      placeholder="Size (S, M, L, 40in chest...)"
-                      value={newSize}
-                      onChange={e => setNewSize(e.target.value)}
-                    />
-                    <div className="form-actions">
-                      <button type="submit" className="btn btn-primary btn-sm" disabled={!newName.trim()}>
-                        Create
-                      </button>
-                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => setCreatingFor(null)}>
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
-      )}
+      ))}
     </div>
   )
 }
