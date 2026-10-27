@@ -3,7 +3,7 @@ export default function Stats({ projects = [], finished = [], yarns = [] }) {
   const today = new Date().toISOString().split('T')[0]
   const wipCount = projects.filter(p => p.startedAt && p.startedAt <= today).length
   const finishedCount = finished.length
-  const totalProjects = projects.length
+  const todoCount = projects.filter(p => !p.startedAt || p.startedAt > today).length
   const yarnCount = yarns.length
 
   const totalSeconds = allProjects.reduce((sum, p) => sum + (p.totalSeconds || 0), 0)
@@ -66,8 +66,8 @@ export default function Stats({ projects = [], finished = [], yarns = [] }) {
           <span className="stat-label">Finished</span>
         </div>
         <div className="stat-card">
-          <span className="stat-number">{totalProjects}</span>
-          <span className="stat-label">Total Projects</span>
+          <span className="stat-number">{todoCount}</span>
+          <span className="stat-label">To-Do</span>
         </div>
         <div className="stat-card">
           <span className="stat-number">{yarnCount}</span>
@@ -168,7 +168,7 @@ export default function Stats({ projects = [], finished = [], yarns = [] }) {
         </div>
       )}
 
-      {totalProjects === 0 && yarnCount === 0 && (
+      {wipCount === 0 && todoCount === 0 && finishedCount === 0 && yarnCount === 0 && (
         <div className="empty-state">
           <div className="empty-icon-text">—</div>
           <p>No stats yet</p>
