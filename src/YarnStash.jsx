@@ -223,6 +223,35 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
     )
   }
 
+  function groupByWeight(yarnList) {
+    const byWeight = {}
+    for (const y of yarnList) {
+      const key = y.weight || ''
+      if (!byWeight[key]) byWeight[key] = []
+      byWeight[key].push(y)
+    }
+    const groups = []
+    const sorted = Object.keys(byWeight).filter(k => k).sort()
+    for (const w of sorted) groups.push({ weight: w, yarns: byWeight[w] })
+    if (byWeight['']) groups.push({ weight: null, yarns: byWeight[''] })
+    return groups
+  }
+
+  function renderGroupedYarns(yarnList, isPast) {
+    const groups = groupByWeight(yarnList)
+    const hasMultiple = groups.length > 1 || groups[0]?.weight
+    return groups.map(group => (
+      <div key={group.weight || '_none'} className="pattern-type-group">
+        {hasMultiple && (
+          <h3 className="pattern-type-heading">{group.weight || 'Other'}</h3>
+        )}
+        <div className="items">
+          {group.yarns.map(yarn => renderYarnCard(yarn, isPast))}
+        </div>
+      </div>
+    ))
+  }
+
   return (
     <div className="section-list">
       {!showForm ? (
@@ -264,27 +293,21 @@ export default function YarnStash({ projects, yarns, pastYarns, yarnActions }) {
       {inUseYarns.length > 0 && (
         <>
           <p className="completed-label">In Use ({inUseYarns.length})</p>
-          <div className="items">
-            {inUseYarns.map(yarn => renderYarnCard(yarn, false))}
-          </div>
+          {renderGroupedYarns(inUseYarns, false)}
         </>
       )}
 
       {stashYarns.length > 0 && (
         <>
           {inUseYarns.length > 0 && <p className="completed-label">Stash ({stashYarns.length})</p>}
-          <div className="items">
-            {stashYarns.map(yarn => renderYarnCard(yarn, false))}
-          </div>
+          {renderGroupedYarns(stashYarns, false)}
         </>
       )}
 
       {filteredPast.length > 0 && (
         <>
           <p className="completed-label">Past Stash ({filteredPast.length})</p>
-          <div className="items">
-            {filteredPast.map(yarn => renderYarnCard(yarn, true))}
-          </div>
+          {renderGroupedYarns(filteredPast, true)}
         </>
       )}
     </div>
