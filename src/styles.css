@@ -1787,28 +1787,41 @@ body {
 }
 
 .calendar-intensity-1 {
-  background: #e8ddf2;
+  background: #d4e4f7;
 }
 
 .calendar-intensity-2 {
-  background: #d0b8e5;
+  background: #cfc4f0;
 }
 
 .calendar-intensity-3 {
-  background: #b48fd4;
-}
-
-.calendar-intensity-3 .calendar-day-num,
-.calendar-intensity-3 .calendar-day-time {
-  color: white;
+  background: #c8a0e3;
 }
 
 .calendar-intensity-4 {
-  background: var(--rose);
+  background: #b878cc;
 }
 
 .calendar-intensity-4 .calendar-day-num,
 .calendar-intensity-4 .calendar-day-time {
+  color: white;
+}
+
+.calendar-intensity-5 {
+  background: #8b44a8;
+}
+
+.calendar-intensity-5 .calendar-day-num,
+.calendar-intensity-5 .calendar-day-time {
+  color: white;
+}
+
+.calendar-intensity-6 {
+  background: var(--rose);
+}
+
+.calendar-intensity-6 .calendar-day-num,
+.calendar-intensity-6 .calendar-day-time {
   color: white;
 }
 

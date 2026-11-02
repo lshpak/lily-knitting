@@ -62,7 +62,9 @@ export default function Calendar({ sessions = [], projects = [], finished = [] }
     if (seconds < 3600) return 1
     if (seconds < 7200) return 2
     if (seconds < 10800) return 3
-    return 4
+    if (seconds < 14400) return 4
+    if (seconds < 18000) return 5
+    return 6
   }
 
   function goBack() {
