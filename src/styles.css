@@ -1791,15 +1791,15 @@ body {
 }
 
 .calendar-intensity-2 {
-  background: #cfc4f0;
+  background: #c4c4f2;
 }
 
 .calendar-intensity-3 {
-  background: #c8a0e3;
+  background: #afa0e6;
 }
 
 .calendar-intensity-4 {
-  background: #b878cc;
+  background: #9478d4;
 }
 
 .calendar-intensity-4 .calendar-day-num,
@@ -1808,7 +1808,7 @@ body {
 }
 
 .calendar-intensity-5 {
-  background: #8b44a8;
+  background: #7050b8;
 }
 
 .calendar-intensity-5 .calendar-day-num,
