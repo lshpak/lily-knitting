@@ -59,11 +59,11 @@ export default function Calendar({ sessions = [], projects = [], finished = [] }
 
   function getIntensity(seconds) {
     if (!seconds) return 0
-    if (seconds < 1800) return 1
-    if (seconds < 3600) return 2
-    if (seconds < 5400) return 3
-    if (seconds < 7200) return 4
-    if (seconds < 9000) return 5
+    if (seconds < 3600) return 1
+    if (seconds < 7200) return 2
+    if (seconds < 10800) return 3
+    if (seconds < 14400) return 4
+    if (seconds < 18000) return 5
     return 6
   }
 
