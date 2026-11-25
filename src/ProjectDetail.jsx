@@ -440,16 +440,15 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
                   <span>minutes</span>
                 </label>
               </div>
-              <label className="manual-time-field" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <div className="manual-time-date">
                 <span>Date</span>
                 <input
                   type="date"
                   className="input input-sm"
                   value={addDate}
                   onChange={e => setAddDate(e.target.value)}
-                  placeholder="Today"
                 />
-              </label>
+              </div>
               <div className="form-actions">
                 <button
                   className="btn btn-primary btn-sm"
