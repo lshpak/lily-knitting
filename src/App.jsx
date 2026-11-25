@@ -86,15 +86,17 @@ export default function App() {
   function setPatterns(p) { updateData('patterns', typeof p === 'function' ? p(patterns) : p) }
   function setSessions(s) { updateData('sessions', typeof s === 'function' ? s(sessions) : s) }
 
-  function addSession(projectId, seconds) {
-    const now = new Date()
-    const date = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
+  function addSession(projectId, seconds, date) {
+    if (!date) {
+      const now = new Date()
+      date = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
+    }
     const session = {
       id: Date.now().toString(),
       projectId,
       date,
       seconds,
-      addedAt: now.toISOString(),
+      addedAt: new Date().toISOString(),
     }
     setSessions([session, ...sessions])
   }
@@ -203,7 +205,7 @@ export default function App() {
             onBack={() => setActiveId(null)}
             onAddPattern={(pattern) => setPatterns([pattern, ...patterns])}
             onUpdatePattern={(id, updates) => setPatterns(patterns.map(p => p.id === id ? { ...p, ...updates } : p))}
-            onLogSession={(seconds) => addSession(activeId, seconds)}
+            onLogSession={(seconds, date) => addSession(activeId, seconds, date)}
           />
         )
       }
@@ -258,7 +260,7 @@ export default function App() {
             onBack={() => setActiveId(null)}
             onAddPattern={(pattern) => setPatterns([pattern, ...patterns])}
             onUpdatePattern={(id, updates) => setPatterns(patterns.map(p => p.id === id ? { ...p, ...updates } : p))}
-            onLogSession={(seconds) => addSession(activeId, seconds)}
+            onLogSession={(seconds, date) => addSession(activeId, seconds, date)}
           />
         )
       }

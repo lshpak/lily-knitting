@@ -18,6 +18,7 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
   const [showAddTime, setShowAddTime] = useState(false)
   const [addHours, setAddHours] = useState('')
   const [addMinutes, setAddMinutes] = useState('')
+  const [addDate, setAddDate] = useState('')
   const [editingPattern, setEditingPattern] = useState(false)
   const [editPatternContent, setEditPatternContent] = useState('')
 
@@ -139,9 +140,10 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
     const extraSeconds = h * 3600 + m * 60
     if (extraSeconds <= 0) return
     onUpdate({ totalSeconds: (project.totalSeconds || 0) + extraSeconds })
-    if (onLogSession) onLogSession(extraSeconds)
+    if (onLogSession) onLogSession(extraSeconds, addDate || undefined)
     setAddHours('')
     setAddMinutes('')
+    setAddDate('')
     setShowAddTime(false)
   }
 
@@ -438,6 +440,16 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
                   <span>minutes</span>
                 </label>
               </div>
+              <label className="manual-time-field" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                <span>Date</span>
+                <input
+                  type="date"
+                  className="input input-sm"
+                  value={addDate}
+                  onChange={e => setAddDate(e.target.value)}
+                  placeholder="Today"
+                />
+              </label>
               <div className="form-actions">
                 <button
                   className="btn btn-primary btn-sm"
@@ -446,7 +458,7 @@ export default function ProjectDetail({ project, yarns = [], yarnActions, bankPa
                 >
                   Add
                 </button>
-                <button className="btn btn-ghost btn-sm" onClick={() => { setShowAddTime(false); setAddHours(''); setAddMinutes('') }}>
+                <button className="btn btn-ghost btn-sm" onClick={() => { setShowAddTime(false); setAddHours(''); setAddMinutes(''); setAddDate('') }}>
                   Cancel
                 </button>
               </div>

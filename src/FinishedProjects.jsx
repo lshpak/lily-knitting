@@ -27,7 +27,7 @@ export default function FinishedProjects({ finished, setFinished, bankPatterns =
         onBack={() => setActiveId(null)}
         onAddPattern={onAddPattern}
         onUpdatePattern={onUpdatePattern}
-        onLogSession={onLogSession ? (seconds) => onLogSession(activeId, seconds) : undefined}
+        onLogSession={onLogSession ? (seconds, date) => onLogSession(activeId, seconds, date) : undefined}
       />
     )
   }
